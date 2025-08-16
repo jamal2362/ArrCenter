@@ -14,8 +14,7 @@ android {
         targetSdk = 36
         versionCode = 10
         versionName = "1.0"
-        resourceConfigurations += ['en', 'de']
-        setProperty('archivesBaseName', 'ArrCenter_' + versionName)
+        versionNameSuffix = "ArrCenter_${versionName}"
 
         vectorDrawables {
             useSupportLibrary = true
@@ -26,13 +25,13 @@ android {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
 		
         debug {
             isMinifyEnabled = false
             isShrinkResources = false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
 
