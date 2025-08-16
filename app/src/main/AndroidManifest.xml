@@ -6,7 +6,7 @@
 
     <application
         android:allowBackup="true"
-        android:label="ArrCenterApp"
+        android:label="ArrCenter"
         android:icon="@mipmap/ic_launcher"
         android:supportsRtl="true"
         android:usesCleartextTraffic="true"

@@ -23,9 +23,14 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+		
         debug {
             isMinifyEnabled = false
+            isShrinkResources = false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 
@@ -33,12 +38,15 @@ android {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
+	
     kotlin {
         jvmToolchain(21)
     }
+	
     buildFeatures {
         compose = true
     }
+	
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"

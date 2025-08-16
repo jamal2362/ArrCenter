@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "ArrCenterApp"
+rootProject.name = "ArrCenter"
 include(":app")
