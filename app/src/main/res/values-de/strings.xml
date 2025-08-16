@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="jellyseerr">Jellyseerr</string>
+    <string name="radarr">Radarr</string>
+    <string name="sonarr">Sonarr</string>
+    <string name="settings">Einstellungen</string>
+    <string name="snackbar_exit">Nochmal zurück zum Beenden</string>
+    <string name="snackbar_saved">Gespeichert</string>
+    <string name="primary_url">Primäre URL</string>
+    <string name="secondary_url">Sekundäre URL</string>
+    <string name="save">Speichern</string>
+    <string name="no_connection">Keine Verbindung möglich!</string>
+</resources>
