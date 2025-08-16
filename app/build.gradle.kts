@@ -14,6 +14,8 @@ android {
         targetSdk = 36
         versionCode = 10
         versionName = "1.0"
+        resourceConfigurations += ['en', 'de']
+        setProperty('archivesBaseName', 'ArrCenter_' + versionName)
 
         vectorDrawables {
             useSupportLibrary = true
