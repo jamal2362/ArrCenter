@@ -155,6 +155,9 @@ fun ServiceScreen(type: ServiceType) {
                                 )
                                 settings.javaScriptEnabled = true
                                 settings.domStorageEnabled = true
+                                settings.builtInZoomControls = true
+                                settings.displayZoomControls = false
+                                settings.setSupportZoom(true)
 
                                 val cookieManager = CookieManager.getInstance()
                                 cookieManager.setAcceptCookie(true)
