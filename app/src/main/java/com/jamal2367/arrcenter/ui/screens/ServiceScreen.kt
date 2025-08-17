@@ -1,20 +1,23 @@
 package com.jamal2367.arrcenter.ui.screens
 
 import android.annotation.SuppressLint
+import android.os.Handler
+import android.os.Looper
 import android.view.ViewGroup
 import android.webkit.CookieManager
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.activity.ComponentActivity
+import androidx.activity.OnBackPressedCallback
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -24,21 +27,32 @@ import com.jamal2367.arrcenter.data.SettingsKeys
 import com.jamal2367.arrcenter.data.dataStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.HttpURLConnection
 import java.net.URL
 
 @OptIn(ExperimentalMaterial3Api::class)
-@SuppressLint("SetJavaScriptEnabled")
+@SuppressLint("SetJavaScriptEnabled", "UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ServiceScreen(type: ServiceType) {
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
+    val activity = context as ComponentActivity
+
     var currentUrl by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf(false) }
-
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
 
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+    var backPressedOnce by remember { mutableStateOf(false) }
+    val handler = remember { Handler(Looper.getMainLooper()) }
+
+    // Refresh-State
+    var isRefreshing by remember { mutableStateOf(false) }
+
+    // URL laden
     suspend fun loadUrl() {
         isLoading = true
         error = false
@@ -71,69 +85,106 @@ fun ServiceScreen(type: ServiceType) {
         loadUrl()
     }
 
-    var isRefreshing by remember { mutableStateOf(false) }
+    // OnBackPressedCallback für System-Back (inkl. Gesten)
+    DisposableEffect(activity) {
+        val callback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (webViewRef?.canGoBack() == true) {
+                    webViewRef?.goBack()
+                } else {
+                    if (backPressedOnce) {
+                        activity.finishAffinity()
+                    } else {
+                        backPressedOnce = true
+                        scope.launch {
+                            snackbarHostState.showSnackbar(context.getString(R.string.snackbar_exit))
+                        }
+                        handler.postDelayed({ backPressedOnce = false }, 2000)
+                    }
+                }
+            }
+        }
+        activity.onBackPressedDispatcher.addCallback(callback)
+        onDispose { callback.remove() }
+    }
 
-    PullToRefreshBox(
-        isRefreshing = isRefreshing,
-        onRefresh = {
-            isRefreshing = true
-            webViewRef?.reload()
-        },
-        modifier = Modifier.fillMaxSize()
-    ) {
-        when {
-            isLoading -> Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) { CircularProgressIndicator() }
+    Scaffold(
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState) { data ->
+                Snackbar(
+                    snackbarData = data,
+                    containerColor = Color.DarkGray,
+                    contentColor = Color.White
+                )
+            }
+        }
+    ) { _ ->
 
-            error -> Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) { Text(stringResource(R.string.no_connection), color = MaterialTheme.colorScheme.onSurface) }
-
-            else -> currentUrl?.let { url ->
-                AndroidView(
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = {
+                isRefreshing = true
+                webViewRef?.reload()
+            },
+            modifier = Modifier.fillMaxSize()
+        ) {
+            when {
+                isLoading -> Box(
                     modifier = Modifier.fillMaxSize(),
-                    factory = { ctx ->
-                        val swipeRefreshLayout = SwipeRefreshLayout(ctx)
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+                error -> Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(stringResource(R.string.no_connection), color = MaterialTheme.colorScheme.onSurface)
+                }
+                else -> currentUrl?.let { url ->
+                    AndroidView(
+                        modifier = Modifier.fillMaxSize(),
+                        factory = { ctx ->
+                            val swipeRefreshLayout = SwipeRefreshLayout(ctx)
 
-                        val webView = WebView(ctx).apply {
-                            layoutParams = ViewGroup.LayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.MATCH_PARENT
-                            )
-                            settings.javaScriptEnabled = true
-                            settings.domStorageEnabled = true
+                            val webView = WebView(ctx).apply {
+                                layoutParams = ViewGroup.LayoutParams(
+                                    ViewGroup.LayoutParams.MATCH_PARENT,
+                                    ViewGroup.LayoutParams.MATCH_PARENT
+                                )
+                                settings.javaScriptEnabled = true
+                                settings.domStorageEnabled = true
 
-                            val cookieManager = CookieManager.getInstance()
-                            cookieManager.setAcceptCookie(true)
-                            cookieManager.setAcceptThirdPartyCookies(this, true)
+                                val cookieManager = CookieManager.getInstance()
+                                cookieManager.setAcceptCookie(true)
+                                cookieManager.setAcceptThirdPartyCookies(this, true)
 
-                            webViewClient = object : WebViewClient() {
-                                override fun onPageFinished(view: WebView?, url: String?) {
-                                    super.onPageFinished(view, url)
-                                    swipeRefreshLayout.isRefreshing = false
+                                webViewClient = object : WebViewClient() {
+                                    override fun onPageFinished(view: WebView?, url: String?) {
+                                        super.onPageFinished(view, url)
+                                        swipeRefreshLayout.isRefreshing = false
+                                        isRefreshing = false
+                                    }
                                 }
+
+                                loadUrl(url)
                             }
 
-                            loadUrl(url)
+                            webViewRef = webView
+
+                            swipeRefreshLayout.setOnChildScrollUpCallback { _, _ ->
+                                webView.scrollY > 0
+                            }
+
+                            swipeRefreshLayout.setOnRefreshListener {
+                                webView.reload()
+                            }
+
+                            swipeRefreshLayout.addView(webView)
+                            swipeRefreshLayout
                         }
-
-                        webViewRef = webView
-
-                        swipeRefreshLayout.setOnChildScrollUpCallback { _, _ ->
-                            webView.scrollY > 0
-                        }
-
-                        swipeRefreshLayout.setOnRefreshListener {
-                            webView.reload()
-                        }
-
-                        swipeRefreshLayout.addView(webView)
-                        swipeRefreshLayout
-                    }
-                )
+                    )
+                }
             }
         }
     }
@@ -156,4 +207,3 @@ private fun isReachable(url: String?): Boolean {
         false
     }
 }
-
