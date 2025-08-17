@@ -8,11 +8,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.jamal2367.arrcenter.R
 import com.jamal2367.arrcenter.ui.screens.ServiceScreen
@@ -21,9 +23,20 @@ import com.jamal2367.arrcenter.ui.screens.SettingsScreen
 @Composable
 fun AppRoot() {
     val navController = rememberNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
     var fabExpanded by remember { mutableStateOf(false) }
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    val backgroundColor = when (currentRoute) {
+        "jellyseerr" -> Color(0xFF1D2735)
+        "radarr" -> Color(0xFF2A2A2A)
+        "sonarr" -> Color(0xFF2A2A2A)
+        "sabnzbd" -> Color(0xFF000000)
+        else -> MaterialTheme.colorScheme.background
+    }
 
     Scaffold(
+        containerColor = backgroundColor,
         floatingActionButton = {
             Box(
                 contentAlignment = Alignment.BottomStart,
