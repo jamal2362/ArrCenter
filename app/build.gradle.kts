@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.jamal2367.arrcenter"
-        minSdk = 27
+        minSdk = 31
         targetSdk = 36
         versionCode = 10
         versionName = "1.0"

@@ -201,8 +201,8 @@ private fun defaultSecondary(): String? = null
 private fun isReachable(url: String?): Boolean {
     return try {
         val conn = URL(url).openConnection() as HttpURLConnection
-        conn.connectTimeout = 250
-        conn.readTimeout = 250
+        conn.connectTimeout = 500
+        conn.readTimeout = 500
         conn.requestMethod = "GET"
         conn.connect()
         val code = conn.responseCode
