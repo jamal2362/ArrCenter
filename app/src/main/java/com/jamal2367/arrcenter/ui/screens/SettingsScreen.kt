@@ -53,9 +53,13 @@ fun SettingsScreen(onSaved: () -> Unit = {}) {
     ) { inner ->
         Column(
             modifier = Modifier
-                .padding(inner)
-                .padding(12.dp)
+                .fillMaxSize()
                 .verticalScroll(scrollState)
+                .padding(
+                    bottom = inner.calculateBottomPadding(),
+                    start = 12.dp,
+                    end = 12.dp
+                )
         ) {
             SettingsSection(
                 title = stringResource(R.string.jellyseerr),
