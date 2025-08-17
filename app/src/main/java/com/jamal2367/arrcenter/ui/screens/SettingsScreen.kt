@@ -31,6 +31,8 @@ fun SettingsScreen(onSaved: () -> Unit = {}) {
     var radarrSecondary by remember { mutableStateOf("") }
     var sonarrPrimary by remember { mutableStateOf("") }
     var sonarrSecondary by remember { mutableStateOf("") }
+    var sabnzbdPrimary by remember { mutableStateOf("") }
+    var sabnzbdSecondary by remember { mutableStateOf("") }
 
     LaunchedEffect(prefsFlow.value) {
         jellyPrimary = prefsFlow.value[SettingsKeys.JELLY_PRIMARY] ?: ""
@@ -39,6 +41,8 @@ fun SettingsScreen(onSaved: () -> Unit = {}) {
         radarrSecondary = prefsFlow.value[SettingsKeys.RADARR_SECONDARY] ?: ""
         sonarrPrimary = prefsFlow.value[SettingsKeys.SONARR_PRIMARY] ?: ""
         sonarrSecondary = prefsFlow.value[SettingsKeys.SONARR_SECONDARY] ?: ""
+        sabnzbdPrimary = prefsFlow.value[SettingsKeys.SABNZBD_PRIMARY] ?: ""
+        sabnzbdSecondary = prefsFlow.value[SettingsKeys.SABNZBD_SECONDARY] ?: ""
     }
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -77,6 +81,14 @@ fun SettingsScreen(onSaved: () -> Unit = {}) {
                 onSecondaryChange = { sonarrSecondary = it }
             )
 
+            SettingsSection(
+                title = stringResource(R.string.sabnzbd),
+                primaryValue = sabnzbdPrimary,
+                onPrimaryChange = { sabnzbdPrimary = it },
+                secondaryValue = sabnzbdSecondary,
+                onSecondaryChange = { sabnzbdSecondary = it }
+            )
+
             Button(
                 onClick = {
                     scope.launch {
@@ -87,6 +99,8 @@ fun SettingsScreen(onSaved: () -> Unit = {}) {
                             e[SettingsKeys.RADARR_SECONDARY] = radarrSecondary
                             e[SettingsKeys.SONARR_PRIMARY] = sonarrPrimary
                             e[SettingsKeys.SONARR_SECONDARY] = sonarrSecondary
+                            e[SettingsKeys.SABNZBD_PRIMARY] = sabnzbdPrimary
+                            e[SettingsKeys.SABNZBD_SECONDARY] = sabnzbdSecondary
                         }
                         snackbarHostState.showSnackbar(context.getString(R.string.snackbar_saved))
                         onSaved()

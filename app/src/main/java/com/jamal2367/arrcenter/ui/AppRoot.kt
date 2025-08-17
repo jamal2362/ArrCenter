@@ -21,8 +21,9 @@ fun AppRoot() {
     mapOf(
         "jellyseerr" to stringResource(R.string.jellyseerr),
         "radarr" to stringResource(R.string.radarr),
+        "settings" to stringResource(R.string.settings),
         "sonarr" to stringResource(R.string.sonarr),
-        "settings" to stringResource(R.string.settings)
+        "sabnzbd" to stringResource(R.string.sabnzbd)
     )
     var currentRoute by remember { mutableStateOf("jellyseerr") }
 
@@ -43,7 +44,14 @@ fun AppRoot() {
                 NavigationBarItem(
                     icon = { Icon(painter = painterResource(id = R.drawable.ic_radarr_24dp), contentDescription = null) },
                     label = { Text(stringResource(R.string.radarr)) },
-                    selected = currentRoute == "radarr",                    onClick = { navigate("radarr") }
+                    selected = currentRoute == "radarr",
+                    onClick = { navigate("radarr") }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Settings, contentDescription = null) },
+                    label = { Text(stringResource(R.string.settings)) },
+                    selected = currentRoute == "settings",
+                    onClick = { navigate("settings") }
                 )
                 NavigationBarItem(
                     icon = { Icon(painter = painterResource(id = R.drawable.ic_sonarr_24dp), contentDescription = null) },
@@ -52,10 +60,10 @@ fun AppRoot() {
                     onClick = { navigate("sonarr") }
                 )
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                    label = { Text(stringResource(R.string.settings)) },
-                    selected = currentRoute == "settings",
-                    onClick = { navigate("settings") }
+                    icon = { Icon(painter = painterResource(id = R.drawable.ic_sabnzbd_24dp), contentDescription = null) },
+                    label = { Text(stringResource(R.string.sabnzbd)) },
+                    selected = currentRoute == "sabnzbd",
+                    onClick = { navigate("sabnzbd") }
                 )
             }
         }
@@ -68,8 +76,9 @@ fun AppRoot() {
         ) {
             composable("jellyseerr") { ServiceScreen(ServiceType.Jellyseerr) }
             composable("radarr") { ServiceScreen(ServiceType.Radarr) }
-            composable("sonarr") { ServiceScreen(ServiceType.Sonarr) }
             composable("settings") { SettingsScreen(onSaved = {}) }
+            composable("sonarr") { ServiceScreen(ServiceType.Sonarr) }
+            composable("sabnzbd") { ServiceScreen(ServiceType.SABnzbd) }
         }
     }
 }
@@ -77,5 +86,6 @@ fun AppRoot() {
 enum class ServiceType() {
     Jellyseerr(),
     Radarr(),
-    Sonarr()
+    Sonarr(),
+    SABnzbd()
 }
