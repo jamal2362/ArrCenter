@@ -13,9 +13,10 @@ fun AppTheme(
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
-    val colorScheme = when {
-        darkTheme -> dynamicDarkColorScheme(context)
-        else -> dynamicLightColorScheme(context)
+    val colorScheme = if (darkTheme) {
+        dynamicDarkColorScheme(context)
+    } else {
+        dynamicLightColorScheme(context)
     }
 
     MaterialTheme(
