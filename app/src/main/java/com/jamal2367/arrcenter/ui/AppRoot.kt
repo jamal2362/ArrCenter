@@ -182,7 +182,6 @@ fun SheetItem(
     }
 }
 
-
 enum class ServiceType {
     Jellyseerr,
     Radarr,

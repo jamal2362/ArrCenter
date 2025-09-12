@@ -120,7 +120,7 @@ fun ServiceScreen(type: ServiceType, onShowSheet: (() -> Unit)? = null) {
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(stringResource(R.string.no_connection), color = MaterialTheme.colorScheme.onSurface)
+                    Text(stringResource(R.string.no_connection))
                 }
                 else -> currentUrl?.let { url ->
                     AndroidView(
