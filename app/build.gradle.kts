@@ -12,8 +12,8 @@ android {
         applicationId = "com.jamal2367.arrcenter"
         minSdk = 31
         targetSdk = 36
-        versionCode = 10
-        versionName = "1.0"
+        versionCode = 20
+        versionName = "2.0"
         versionNameSuffix = "ArrCenter_${versionName}"
 
         vectorDrawables {
