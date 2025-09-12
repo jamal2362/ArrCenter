@@ -1,8 +1,6 @@
 package com.jamal2367.arrcenter.ui.screens
 
 import android.annotation.SuppressLint
-import android.os.Handler
-import android.os.Looper
 import android.view.ViewGroup
 import android.webkit.CookieManager
 import android.webkit.WebView
@@ -27,7 +25,6 @@ import com.jamal2367.arrcenter.data.SettingsKeys
 import com.jamal2367.arrcenter.data.dataStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.HttpURLConnection
 import java.net.URL
@@ -35,24 +32,16 @@ import java.net.URL
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("SetJavaScriptEnabled", "UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun ServiceScreen(type: ServiceType) {
+fun ServiceScreen(type: ServiceType, onShowSheet: (() -> Unit)? = null) {
     val context = LocalContext.current
     val activity = context as ComponentActivity
-
     var currentUrl by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf(false) }
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
-
     val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
-    var backPressedOnce by remember { mutableStateOf(false) }
-    val handler = remember { Handler(Looper.getMainLooper()) }
-
-    // Refresh-State
     var isRefreshing by remember { mutableStateOf(false) }
 
-    // URL laden
     suspend fun loadUrl() {
         isLoading = true
         error = false
@@ -86,22 +75,13 @@ fun ServiceScreen(type: ServiceType) {
         loadUrl()
     }
 
-    // OnBackPressedCallback für System-Back (inkl. Gesten)
     DisposableEffect(activity) {
         val callback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (webViewRef?.canGoBack() == true) {
                     webViewRef?.goBack()
                 } else {
-                    if (backPressedOnce) {
-                        activity.finishAffinity()
-                    } else {
-                        backPressedOnce = true
-                        scope.launch {
-                            snackbarHostState.showSnackbar(context.getString(R.string.snackbar_exit))
-                        }
-                        handler.postDelayed({ backPressedOnce = false }, 2000)
-                    }
+                    onShowSheet?.invoke()
                 }
             }
         }

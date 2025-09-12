@@ -1,5 +1,6 @@
 package com.jamal2367.arrcenter.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -7,8 +8,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.core.edit
@@ -24,6 +27,8 @@ fun SettingsScreen(onSaved: () -> Unit = {}) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val prefsFlow = context.dataStore.data.collectAsState(initial = emptyPreferences())
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scrollState = rememberScrollState()
 
     var jellyPrimary by remember { mutableStateOf("") }
     var jellySecondary by remember { mutableStateOf("") }
@@ -45,9 +50,6 @@ fun SettingsScreen(onSaved: () -> Unit = {}) {
         sabnzbdSecondary = prefsFlow.value[SettingsKeys.SABNZBD_SECONDARY] ?: ""
     }
 
-    val snackbarHostState = remember { SnackbarHostState() }
-    val scrollState = rememberScrollState()
-
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { inner ->
@@ -61,6 +63,14 @@ fun SettingsScreen(onSaved: () -> Unit = {}) {
                     end = 12.dp
                 )
         ) {
+            Text(
+                text = stringResource(R.string.settings),
+                style = MaterialTheme.typography.headlineLarge,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 32.dp)
+            )
+
             SettingsSection(
                 title = stringResource(R.string.jellyseerr),
                 primaryValue = jellyPrimary,
@@ -110,10 +120,6 @@ fun SettingsScreen(onSaved: () -> Unit = {}) {
                         onSaved()
                     }
                 },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    contentColor = MaterialTheme.colorScheme.onSurface
-                ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
@@ -132,30 +138,43 @@ fun SettingsSection(
     secondaryValue: String,
     onSecondaryChange: (String) -> Unit
 ) {
-    Card(
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            .padding(vertical = 8.dp)
+            .shadow(6.dp, RoundedCornerShape(24.dp))
+            .background(
+                color = MaterialTheme.colorScheme.surfaceContainer,
+                shape = RoundedCornerShape(24.dp)
+            )
+            .padding(16.dp)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(title, style = MaterialTheme.typography.titleMedium)
+        Column {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            Spacer(Modifier.height(8.dp))
 
             OutlinedTextField(
                 value = primaryValue,
                 onValueChange = onPrimaryChange,
-                label = { Text(stringResource(R.string.primary_url)) },
-                modifier = Modifier.fillMaxWidth()
+                label = { Text(stringResource(R.string.primary_url), maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
             )
+
             Spacer(Modifier.height(8.dp))
+
             OutlinedTextField(
                 value = secondaryValue,
                 onValueChange = onSecondaryChange,
-                label = { Text(stringResource(R.string.secondary_url)) },
-                modifier = Modifier.fillMaxWidth()
+                label = { Text(stringResource(R.string.secondary_url), maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
             )
         }
     }
 }
+
