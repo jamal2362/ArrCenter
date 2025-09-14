@@ -127,6 +127,7 @@ fun ServiceScreen(type: ServiceType, onShowSheet: (() -> Unit)? = null) {
                         modifier = Modifier.fillMaxSize(),
                         factory = { ctx ->
                             val swipeRefreshLayout = SwipeRefreshLayout(ctx)
+                            val cookieManager = CookieManager.getInstance()
 
                             val webView = WebView(ctx).apply {
                                 layoutParams = ViewGroup.LayoutParams(
@@ -139,7 +140,6 @@ fun ServiceScreen(type: ServiceType, onShowSheet: (() -> Unit)? = null) {
                                 settings.displayZoomControls = false
                                 settings.setSupportZoom(true)
 
-                                val cookieManager = CookieManager.getInstance()
                                 cookieManager.setAcceptCookie(true)
                                 cookieManager.setAcceptThirdPartyCookies(this, true)
 
