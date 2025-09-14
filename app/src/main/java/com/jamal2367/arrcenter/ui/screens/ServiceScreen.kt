@@ -21,7 +21,6 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -43,13 +42,12 @@ import kotlinx.coroutines.withContext
 fun ServiceScreen(type: ServiceType, onShowSheet: (() -> Unit)? = null) {
     val context = LocalContext.current
     val activity = context as ComponentActivity
+    val coroutineScope = rememberCoroutineScope()
     var currentUrl by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf(false) }
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
-    val snackbarHostState = remember { SnackbarHostState() }
     var isRefreshing by remember { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
 
     suspend fun loadUrl() {
         isLoading = true
@@ -96,17 +94,7 @@ fun ServiceScreen(type: ServiceType, onShowSheet: (() -> Unit)? = null) {
         onDispose { callback.remove() }
     }
 
-    Scaffold(
-        snackbarHost = {
-            SnackbarHost(hostState = snackbarHostState) { data ->
-                Snackbar(
-                    snackbarData = data,
-                    containerColor = Color.DarkGray,
-                    contentColor = Color.White
-                )
-            }
-        }
-    ) { innerPadding ->
+    Scaffold { innerPadding ->
         PullToRefreshBox(
             isRefreshing = isRefreshing,
             onRefresh = {
