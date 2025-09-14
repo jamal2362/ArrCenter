@@ -21,7 +21,6 @@ import com.jamal2367.arrcenter.data.dataStore
 import kotlinx.coroutines.launch
 import com.jamal2367.arrcenter.R
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(onSaved: () -> Unit = {}) {
     val context = LocalContext.current
