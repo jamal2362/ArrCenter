@@ -7,9 +7,15 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
@@ -18,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.jamal2367.arrcenter.R
@@ -27,6 +34,7 @@ import com.jamal2367.arrcenter.data.dataStore
 import com.jamal2367.arrcenter.helper.isReachable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,6 +49,7 @@ fun ServiceScreen(type: ServiceType, onShowSheet: (() -> Unit)? = null) {
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
     var isRefreshing by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
     suspend fun loadUrl() {
         isLoading = true
@@ -102,10 +111,12 @@ fun ServiceScreen(type: ServiceType, onShowSheet: (() -> Unit)? = null) {
             isRefreshing = isRefreshing,
             onRefresh = {
                 isRefreshing = true
-                webViewRef?.reload()
+                coroutineScope.launch {
+                    loadUrl()
+                    isRefreshing = false
+                }
             },
-            modifier = Modifier
-                .fillMaxSize()
+            modifier = Modifier.fillMaxSize()
         ) {
             when {
                 isLoading -> Box(
@@ -116,11 +127,16 @@ fun ServiceScreen(type: ServiceType, onShowSheet: (() -> Unit)? = null) {
                 ) {
                     CircularProgressIndicator()
                 }
-                error -> Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+                error -> Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(stringResource(R.string.no_connection))
+                    Spacer(modifier = Modifier.height(18.dp))
+                    Text(stringResource(R.string.pull_down_to_refresh))
                 }
                 else -> currentUrl?.let { url ->
                     AndroidView(

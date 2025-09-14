@@ -11,4 +11,5 @@
     <string name="save">Speichern</string>
     <string name="no_connection">Keine Verbindung möglich!</string>
     <string name="sabnzbd">SABnzbd</string>
+    <string name="pull_down_to_refresh">Nach unten ziehen zum Aktualisieren</string>
 </resources>
