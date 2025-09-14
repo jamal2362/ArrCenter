@@ -9,6 +9,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
@@ -23,14 +24,13 @@ import com.jamal2367.arrcenter.R
 import com.jamal2367.arrcenter.ui.ServiceType
 import com.jamal2367.arrcenter.data.SettingsKeys
 import com.jamal2367.arrcenter.data.dataStore
+import com.jamal2367.arrcenter.helper.isReachable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import java.net.HttpURLConnection
-import java.net.URL
 
 @OptIn(ExperimentalMaterial3Api::class)
-@SuppressLint("SetJavaScriptEnabled", "UnusedMaterial3ScaffoldPaddingParameter")
+@SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun ServiceScreen(type: ServiceType, onShowSheet: (() -> Unit)? = null) {
     val context = LocalContext.current
@@ -48,6 +48,7 @@ fun ServiceScreen(type: ServiceType, onShowSheet: (() -> Unit)? = null) {
         currentUrl = null
 
         val prefs = context.dataStore.data.first()
+
         val (primary, secondary) = when (type) {
             ServiceType.Jellyseerr -> prefs[SettingsKeys.JELLY_PRIMARY] to prefs[SettingsKeys.JELLY_SECONDARY]
             ServiceType.Radarr -> prefs[SettingsKeys.RADARR_PRIMARY] to prefs[SettingsKeys.RADARR_SECONDARY]
@@ -55,8 +56,8 @@ fun ServiceScreen(type: ServiceType, onShowSheet: (() -> Unit)? = null) {
             ServiceType.SABnzbd -> prefs[SettingsKeys.SABNZBD_PRIMARY] to prefs[SettingsKeys.SABNZBD_SECONDARY]
         }
 
-        val p = primary ?: defaultPrimary()
-        val s = secondary ?: defaultSecondary()
+        val p = primary
+        val s = secondary
 
         val candidate = withContext(Dispatchers.IO) {
             when {
@@ -99,19 +100,21 @@ fun ServiceScreen(type: ServiceType, onShowSheet: (() -> Unit)? = null) {
                 )
             }
         }
-    ) { _ ->
-
+    ) { innerPadding ->
         PullToRefreshBox(
             isRefreshing = isRefreshing,
             onRefresh = {
                 isRefreshing = true
                 webViewRef?.reload()
             },
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
         ) {
             when {
                 isLoading -> Box(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator()
@@ -171,23 +174,5 @@ fun ServiceScreen(type: ServiceType, onShowSheet: (() -> Unit)? = null) {
                 }
             }
         }
-    }
-}
-
-private fun defaultPrimary(): String? = null
-
-private fun defaultSecondary(): String? = null
-
-private fun isReachable(url: String?): Boolean {
-    return try {
-        val conn = URL(url).openConnection() as HttpURLConnection
-        conn.connectTimeout = 500
-        conn.readTimeout = 500
-        conn.requestMethod = "GET"
-        conn.connect()
-        val code = conn.responseCode
-        code in 200..399
-    } catch (_: Exception) {
-        false
     }
 }
