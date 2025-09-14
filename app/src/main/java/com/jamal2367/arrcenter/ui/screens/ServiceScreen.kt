@@ -56,13 +56,10 @@ fun ServiceScreen(type: ServiceType, onShowSheet: (() -> Unit)? = null) {
             ServiceType.SABnzbd -> prefs[SettingsKeys.SABNZBD_PRIMARY] to prefs[SettingsKeys.SABNZBD_SECONDARY]
         }
 
-        val p = primary
-        val s = secondary
-
         val candidate = withContext(Dispatchers.IO) {
             when {
-                isReachable(p) -> p
-                isReachable(s) -> s
+                isReachable(primary) -> primary
+                isReachable(secondary) -> secondary
                 else -> null
             }
         }
