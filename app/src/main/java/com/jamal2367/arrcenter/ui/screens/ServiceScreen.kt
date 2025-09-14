@@ -39,8 +39,11 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.jamal2367.arrcenter.R
 import com.jamal2367.arrcenter.data.SettingsKeys
 import com.jamal2367.arrcenter.data.dataStore
+import com.jamal2367.arrcenter.helper.ServiceType
+import com.jamal2367.arrcenter.helper.injectCSS
+import com.jamal2367.arrcenter.helper.isDesktopMode
+import com.jamal2367.arrcenter.helper.isJS
 import com.jamal2367.arrcenter.helper.isReachable
-import com.jamal2367.arrcenter.ui.ServiceType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -160,7 +163,7 @@ fun ServiceScreen(type: ServiceType, onShowSheet: (() -> Unit)? = null) {
                                 if (type == ServiceType.SABnzbd) {
                                     settings.useWideViewPort = true
                                     settings.loadWithOverviewMode = true
-                                    settings.userAgentString = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36"
+                                    settings.userAgentString = isDesktopMode()
                                 }
 
                                 webViewClient = object : WebViewClient() {
@@ -169,9 +172,11 @@ fun ServiceScreen(type: ServiceType, onShowSheet: (() -> Unit)? = null) {
                                         swipeRefreshLayout.isRefreshing = false
                                         isRefreshing = false
 
+                                        view?.let { injectCSS(it) }
+
                                         if (type == ServiceType.SABnzbd) {
                                             view?.evaluateJavascript(
-                                                "document.querySelector('meta[name=viewport]')?.setAttribute('content', 'width=1024');",
+                                                isJS(),
                                                 null
                                             )
                                         }

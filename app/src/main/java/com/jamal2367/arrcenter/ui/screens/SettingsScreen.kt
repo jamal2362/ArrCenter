@@ -50,11 +50,19 @@ fun SettingsScreen(onSaved: () -> Unit = {}) {
     }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = {
+            SnackbarHost(snackbarHostState) { data ->
+                Snackbar(
+                    snackbarData = data,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                    contentColor = MaterialTheme.colorScheme.onSurface
+                )}
+        }
     ) { inner ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surfaceContainer)
                 .verticalScroll(scrollState)
                 .padding(
                     bottom = inner.calculateBottomPadding(),
@@ -102,6 +110,8 @@ fun SettingsScreen(onSaved: () -> Unit = {}) {
                 onSecondaryChange = { sabnzbdSecondary = it }
             )
 
+            Spacer(Modifier.height(8.dp))
+
             Button(
                 onClick = {
                     scope.launch {
@@ -143,7 +153,7 @@ fun SettingsSection(
             .padding(vertical = 8.dp)
             .shadow(6.dp, RoundedCornerShape(24.dp))
             .background(
-                color = MaterialTheme.colorScheme.surfaceContainer,
+                color = MaterialTheme.colorScheme.surfaceContainerHighest,
                 shape = RoundedCornerShape(24.dp)
             )
             .padding(16.dp)
