@@ -9,8 +9,9 @@
     <string name="primary_url">Primary URL</string>
     <string name="secondary_url">Secondary URL</string>
     <string name="save">Save</string>
-    <string name="no_connection">No connection available!</string>
+    <string name="no_connection">No connection could be established.</string>
+    <string name="retry">Try again</string>
     <string name="sabnzbd">SABnzbd</string>
     <string name="ugreen">Ugreen NAS</string>
-    <string name="pull_down_to_refresh">Pull down to refresh</string>
+    <string name="refresh">Pull down or tap the button to refresh.</string>
 </resources>
