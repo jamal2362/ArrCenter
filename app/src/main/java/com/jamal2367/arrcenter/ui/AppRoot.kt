@@ -52,11 +52,11 @@ fun AppRoot(
             startDestination = "jellyseerr",
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable("jellyseerr") { ServiceScreen(ServiceType.Jellyseerr, onShowSheet = { showSheet = true }) }
-            composable("radarr") { ServiceScreen(ServiceType.Radarr, onShowSheet = { showSheet = true }) }
-            composable("sonarr") { ServiceScreen(ServiceType.Sonarr, onShowSheet = { showSheet = true }) }
-            composable("sabnzbd") { ServiceScreen(ServiceType.SABnzbd, onShowSheet = { showSheet = true }) }
-            composable("ugreen") { ServiceScreen(ServiceType.Ugreen, onShowSheet = { showSheet = true }) }
+            composable("jellyseerr") { ServiceScreen(ServiceType.Jellyseerr, backgroundColor = backgroundColor, onShowSheet = { showSheet = true }) }
+            composable("radarr") { ServiceScreen(ServiceType.Radarr, backgroundColor = backgroundColor, onShowSheet = { showSheet = true }) }
+            composable("sonarr") { ServiceScreen(ServiceType.Sonarr, backgroundColor = backgroundColor, onShowSheet = { showSheet = true }) }
+            composable("sabnzbd") { ServiceScreen(ServiceType.SABnzbd, backgroundColor = backgroundColor, onShowSheet = { showSheet = true }) }
+            composable("ugreen") { ServiceScreen(ServiceType.Ugreen, backgroundColor = backgroundColor, onShowSheet = { showSheet = true }) }
             composable("settings") { SettingsScreen(onSaved = {}) }
         }
 

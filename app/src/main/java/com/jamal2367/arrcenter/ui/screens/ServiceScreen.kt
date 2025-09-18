@@ -10,6 +10,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -18,8 +19,10 @@ import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -38,7 +41,7 @@ import kotlinx.coroutines.withContext
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
-fun ServiceScreen(type: ServiceType, onShowSheet: (() -> Unit)? = null) {
+fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() -> Unit)? = null) {
     val context = LocalContext.current
     val activity = context as ComponentActivity
     val coroutineScope = rememberCoroutineScope()
@@ -120,6 +123,7 @@ fun ServiceScreen(type: ServiceType, onShowSheet: (() -> Unit)? = null) {
                 isLoading -> Box(
                     modifier = Modifier
                         .fillMaxSize()
+                        .background(backgroundColor)
                         .padding(innerPadding),
                     contentAlignment = Alignment.Center
                 ) {
@@ -128,6 +132,7 @@ fun ServiceScreen(type: ServiceType, onShowSheet: (() -> Unit)? = null) {
                 error -> Column(
                     modifier = Modifier
                         .fillMaxSize()
+                        .background(backgroundColor)
                         .padding(24.dp)
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.Center,
