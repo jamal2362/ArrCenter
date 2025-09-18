@@ -1,34 +1,21 @@
 package com.jamal2367.arrcenter.ui.screens
 
 import android.annotation.SuppressLint
+import android.net.Uri
 import android.view.ViewGroup
 import android.webkit.CookieManager
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -39,11 +26,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.jamal2367.arrcenter.R
 import com.jamal2367.arrcenter.data.SettingsKeys
 import com.jamal2367.arrcenter.data.dataStore
-import com.jamal2367.arrcenter.helper.ServiceType
-import com.jamal2367.arrcenter.helper.injectCSS
-import com.jamal2367.arrcenter.helper.isDesktopMode
-import com.jamal2367.arrcenter.helper.isJS
-import com.jamal2367.arrcenter.helper.isReachable
+import com.jamal2367.arrcenter.helper.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -56,11 +39,21 @@ fun ServiceScreen(type: ServiceType, onShowSheet: (() -> Unit)? = null) {
     val context = LocalContext.current
     val activity = context as ComponentActivity
     val coroutineScope = rememberCoroutineScope()
+
     var currentUrl by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf(false) }
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
     var isRefreshing by remember { mutableStateOf(false) }
+
+    val fileChooserLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument(),
+        onResult = { uri: Uri? ->
+            val callback = (webViewRef?.webChromeClient as? WebChromeClientWithCallback)?.filePathCallback
+            callback?.onReceiveValue(uri?.let { arrayOf(it) } ?: emptyArray())
+            (webViewRef?.webChromeClient as? WebChromeClientWithCallback)?.filePathCallback = null
+        }
+    )
 
     suspend fun loadUrl() {
         isLoading = true
@@ -156,6 +149,8 @@ fun ServiceScreen(type: ServiceType, onShowSheet: (() -> Unit)? = null) {
                                 settings.domStorageEnabled = true
                                 settings.builtInZoomControls = true
                                 settings.displayZoomControls = false
+                                settings.allowFileAccess = true
+                                settings.allowContentAccess = true
                                 settings.setSupportZoom(true)
 
                                 cookieManager.setAcceptCookie(true)
@@ -184,6 +179,10 @@ fun ServiceScreen(type: ServiceType, onShowSheet: (() -> Unit)? = null) {
                                             )
                                         }
                                     }
+                                }
+
+                                webChromeClient = WebChromeClientWithCallback { mimeTypes ->
+                                    fileChooserLauncher.launch(mimeTypes)
                                 }
 
                                 loadUrl(url)
