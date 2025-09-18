@@ -36,6 +36,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import androidx.webkit.WebSettingsCompat
 import com.jamal2367.arrcenter.R
 import com.jamal2367.arrcenter.data.SettingsKeys
 import com.jamal2367.arrcenter.data.dataStore
@@ -74,6 +75,7 @@ fun ServiceScreen(type: ServiceType, onShowSheet: (() -> Unit)? = null) {
             ServiceType.Radarr -> prefs[SettingsKeys.RADARR_PRIMARY] to prefs[SettingsKeys.RADARR_SECONDARY]
             ServiceType.Sonarr -> prefs[SettingsKeys.SONARR_PRIMARY] to prefs[SettingsKeys.SONARR_SECONDARY]
             ServiceType.SABnzbd -> prefs[SettingsKeys.SABNZBD_PRIMARY] to prefs[SettingsKeys.SABNZBD_SECONDARY]
+            ServiceType.Ugreen -> prefs[SettingsKeys.UGREEN_PRIMARY] to prefs[SettingsKeys.UGREEN_SECONDARY]
         }
 
         val candidate = withContext(Dispatchers.IO) {
@@ -160,7 +162,7 @@ fun ServiceScreen(type: ServiceType, onShowSheet: (() -> Unit)? = null) {
                                 cookieManager.setAcceptCookie(true)
                                 cookieManager.setAcceptThirdPartyCookies(this, true)
 
-                                if (type == ServiceType.SABnzbd) {
+                                if (type == ServiceType.SABnzbd || type == ServiceType.Ugreen) {
                                     settings.useWideViewPort = true
                                     settings.loadWithOverviewMode = true
                                     settings.userAgentString = isDesktopMode()
@@ -172,9 +174,11 @@ fun ServiceScreen(type: ServiceType, onShowSheet: (() -> Unit)? = null) {
                                         swipeRefreshLayout.isRefreshing = false
                                         isRefreshing = false
 
-                                        view?.let { injectCSS(it) }
+                                        view?.let {
+                                            injectCSS(it)
+                                        }
 
-                                        if (type == ServiceType.SABnzbd) {
+                                        if (type == ServiceType.SABnzbd || type == ServiceType.Ugreen) {
                                             view?.evaluateJavascript(
                                                 isJS(),
                                                 null

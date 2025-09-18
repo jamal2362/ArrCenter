@@ -35,6 +35,7 @@ fun AppRoot(
         "radarr" -> Color(0xFF202020)
         "sonarr" -> Color(0xFF202020)
         "sabnzbd" -> Color(0xFF000000)
+        "ugreen" -> Color(0xFF07011D)
         else -> MaterialTheme.colorScheme.surfaceContainer
     }
 
@@ -55,6 +56,7 @@ fun AppRoot(
             composable("radarr") { ServiceScreen(ServiceType.Radarr, onShowSheet = { showSheet = true }) }
             composable("sonarr") { ServiceScreen(ServiceType.Sonarr, onShowSheet = { showSheet = true }) }
             composable("sabnzbd") { ServiceScreen(ServiceType.SABnzbd, onShowSheet = { showSheet = true }) }
+            composable("ugreen") { ServiceScreen(ServiceType.Ugreen, onShowSheet = { showSheet = true }) }
             composable("settings") { SettingsScreen(onSaved = {}) }
         }
 

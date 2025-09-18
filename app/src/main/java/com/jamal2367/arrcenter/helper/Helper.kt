@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,6 +33,7 @@ fun SheetItem(
         Triple("radarr", R.drawable.ic_radarr_24dp, "Radarr"),
         Triple("sonarr", R.drawable.ic_sonarr_24dp, "Sonarr"),
         Triple("sabnzbd", R.drawable.ic_sabnzbd_24dp, "SABnzbd"),
+        Triple("ugreen", R.drawable.ic_storage_24dp, "Ugreen"),
         Triple("settings", null, "Settings")
     )
 
@@ -43,7 +43,7 @@ fun SheetItem(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        items.dropLast(1).chunked(2).forEach { rowItems ->
+        items.chunked(2).forEach { rowItems ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -82,35 +82,6 @@ fun SheetItem(
                 }
             }
         }
-
-        val (route, iconRes, _) = items.last()
-        Surface(
-            onClick = { onClick(route) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(60.dp),
-            color = MaterialTheme.colorScheme.surfaceContainerHighest,
-            shape = RoundedCornerShape(12.dp),
-            tonalElevation = 2.dp
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                if (iconRes != null) {
-                    Icon(
-                        painter = painterResource(id = iconRes),
-                        contentDescription = route,
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.size(36.dp)
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = route,
-                        tint = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.size(36.dp)
-                    )
-                }
-            }
-        }
     }
 }
 
@@ -143,6 +114,15 @@ fun injectCSS(webView: WebView) {
                 
                 .searchbar {
                   background-color: #111827;
+                }
+                
+                [class*="wallpaper-wrapper"] {
+                  background-color: #07011D !important;
+                  background-image: unset !important;
+                }
+                
+                [class*="bg-top"] {
+                  background: unset !important;
                 }
                 
                 [class*="PageHeader-header-"] {
@@ -180,5 +160,6 @@ enum class ServiceType {
     Jellyseerr,
     Radarr,
     Sonarr,
-    SABnzbd
+    SABnzbd,
+    Ugreen
 }
