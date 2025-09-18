@@ -57,7 +57,7 @@ fun SheetItem(
                         modifier = Modifier
                             .weight(1f)
                             .size(80.dp),
-                        color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                        color = MaterialTheme.colorScheme.onSecondary,
                         shape = RoundedCornerShape(12.dp),
                         tonalElevation = 2.dp
                     ) {

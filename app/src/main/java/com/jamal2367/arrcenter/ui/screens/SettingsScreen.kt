@@ -13,7 +13,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import com.jamal2367.arrcenter.data.SettingsKeys
@@ -26,7 +25,6 @@ fun SettingsScreen(onSaved: () -> Unit = {}) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val prefsFlow = context.dataStore.data.collectAsState(initial = emptyPreferences())
-    val snackbarHostState = remember { SnackbarHostState() }
     val scrollState = rememberScrollState()
 
     var jellyPrimary by remember { mutableStateOf("") }
@@ -53,16 +51,7 @@ fun SettingsScreen(onSaved: () -> Unit = {}) {
         ugreenSecondary = prefsFlow.value[SettingsKeys.UGREEN_SECONDARY] ?: ""
     }
 
-    Scaffold(
-        snackbarHost = {
-            SnackbarHost(snackbarHostState) { data ->
-                Snackbar(
-                    snackbarData = data,
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                    contentColor = MaterialTheme.colorScheme.onSurface
-                )}
-        }
-    ) { inner ->
+    Scaffold { inner ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -139,15 +128,18 @@ fun SettingsScreen(onSaved: () -> Unit = {}) {
                             e[SettingsKeys.UGREEN_PRIMARY] = ugreenPrimary
                             e[SettingsKeys.UGREEN_SECONDARY] = ugreenSecondary
                         }
-                        snackbarHostState.showSnackbar(context.getString(R.string.snackbar_saved))
+                        android.widget.Toast.makeText(
+                            context,
+                            context.getString(R.string.snackbar_saved),
+                            android.widget.Toast.LENGTH_SHORT
+                        ).show()
                         onSaved()
                     }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp)
             ) {
-                Text(stringResource(R.string.save), fontSize = 18.sp)
+                Text(stringResource(R.string.save))
             }
         }
     }
@@ -167,7 +159,7 @@ fun SettingsSection(
             .padding(vertical = 8.dp)
             .shadow(6.dp, RoundedCornerShape(24.dp))
             .background(
-                color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                color = MaterialTheme.colorScheme.onSecondary,
                 shape = RoundedCornerShape(24.dp)
             )
             .padding(16.dp)
