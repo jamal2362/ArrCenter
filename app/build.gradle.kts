@@ -12,8 +12,8 @@ android {
         applicationId = "com.jamal2367.arrcenter"
         minSdk = 31
         targetSdk = 36
-        versionCode = 60
-        versionName = "6.0"
+        versionCode = 70
+        versionName = "7.0"
 
         vectorDrawables {
             useSupportLibrary = true
