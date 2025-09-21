@@ -50,7 +50,7 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
 
     var currentUrl by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(true) }
-    var error by remember { mutableStateOf(false) }
+    var isError by remember { mutableStateOf(false) }
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
     var isRefreshing by remember { mutableStateOf(false) }
 
@@ -65,7 +65,7 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
 
     suspend fun loadUrl() {
         isLoading = true
-        error = false
+        isError = false
         currentUrl = null
 
         val prefs = context.dataStore.data.first()
@@ -88,7 +88,7 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
 
         currentUrl = candidate
         isLoading = false
-        error = candidate == null
+        isError = candidate == null
     }
 
     LaunchedEffect(type) {
@@ -131,7 +131,7 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
                 ) {
                     CircularProgressIndicator()
                 }
-                error -> Column(
+                isError -> Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(backgroundColor)
@@ -223,7 +223,6 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
                                         return false
                                     }
 
-
                                     override fun onPageFinished(view: WebView?, url: String?) {
                                         super.onPageFinished(view, url)
                                         swipeRefreshLayout.isRefreshing = false
@@ -239,6 +238,15 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
                                                 null
                                             )
                                         }
+                                    }
+
+                                    override fun onReceivedError(
+                                        view: WebView?,
+                                        request: android.webkit.WebResourceRequest?,
+                                        error: android.webkit.WebResourceError?
+                                    ) {
+                                        super.onReceivedError(view, request, error)
+                                        isError = true
                                     }
                                 }
 
