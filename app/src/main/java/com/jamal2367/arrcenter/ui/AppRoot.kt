@@ -11,8 +11,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.jamal2367.arrcenter.helper.ServiceType
 import com.jamal2367.arrcenter.helper.SheetItem
+import com.jamal2367.arrcenter.model.ServiceType
 import com.jamal2367.arrcenter.ui.screens.ServiceScreen
 import com.jamal2367.arrcenter.ui.screens.SettingsScreen
 import kotlinx.coroutines.launch

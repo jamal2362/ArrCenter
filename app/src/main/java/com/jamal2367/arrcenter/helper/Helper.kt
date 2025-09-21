@@ -173,11 +173,3 @@ fun injectCSS(webView: WebView) {
 
     webView.evaluateJavascript(cssInjection, null)
 }
-
-enum class ServiceType {
-    Jellyseerr,
-    Radarr,
-    Sonarr,
-    SABnzbd,
-    Ugreen
-}
