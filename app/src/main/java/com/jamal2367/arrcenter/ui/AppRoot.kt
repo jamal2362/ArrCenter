@@ -35,7 +35,7 @@ fun AppRoot(
         "radarr" -> Color(0xFF202020)
         "sonarr" -> Color(0xFF202020)
         "sabnzbd" -> Color(0xFF000000)
-        "ugreen" -> Color(0xFF07011D)
+        "ugreen" -> Color(0xFF012A4A)
         else -> MaterialTheme.colorScheme.surfaceContainer
     }
 

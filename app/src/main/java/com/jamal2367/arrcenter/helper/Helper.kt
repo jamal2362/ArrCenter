@@ -131,8 +131,12 @@ fun injectCSS(webView: WebView) {
                 }
                 
                 [class*="wallpaper-wrapper"] {
-                  background-color: #07011D !important;
+                  background-color: #012A4A !important;
                   background-image: unset !important;
+                }
+                
+                [class*="task-bar"] {
+                  background-color: #012A4A !important;
                 }
                 
                 [class*="bg-top"] {
