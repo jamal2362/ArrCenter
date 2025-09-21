@@ -57,7 +57,7 @@ fun SheetItem(
                         modifier = Modifier
                             .weight(1f)
                             .size(80.dp),
-                        color = MaterialTheme.colorScheme.onSecondary,
+                        color = MaterialTheme.colorScheme.surfaceContainerHighest,
                         shape = RoundedCornerShape(12.dp),
                         tonalElevation = 2.dp
                     ) {
@@ -70,14 +70,14 @@ fun SheetItem(
                                 Icon(
                                     painter = painterResource(id = iconRes),
                                     contentDescription = route,
-                                    tint = MaterialTheme.colorScheme.onSurface,
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
                                     modifier = Modifier.size(36.dp)
                                 )
                             } else {
                                 Icon(
                                     imageVector = Icons.Default.Settings,
                                     contentDescription = route,
-                                    tint = MaterialTheme.colorScheme.onSurface,
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
                                     modifier = Modifier.size(36.dp)
                                 )
                             }
@@ -85,7 +85,7 @@ fun SheetItem(
                             Text(
                                 text = stringResource(id = rowItems.first { it.first == route }.third),
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurface,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
                                 fontWeight = FontWeight.Bold
                             )
                         }
