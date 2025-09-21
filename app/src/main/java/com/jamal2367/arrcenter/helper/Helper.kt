@@ -113,6 +113,14 @@ fun isReachable(url: String?): Boolean {
     }
 }
 
+fun isDesktopMode(): String {
+    return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36"
+}
+
+fun isJS(): String {
+    return "document.querySelector('meta[name=viewport]')?.setAttribute('content', 'width=1024');"
+}
+
 fun injectCSS(webView: WebView) {
     val cssInjection = """
         javascript:(function() {
@@ -164,14 +172,6 @@ fun injectCSS(webView: WebView) {
     """.trimIndent()
 
     webView.evaluateJavascript(cssInjection, null)
-}
-
-fun isDesktopMode(): String {
-    return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36"
-}
-
-fun isJS(): String {
-    return "document.querySelector('meta[name=viewport]')?.setAttribute('content', 'width=1024');"
 }
 
 enum class ServiceType {
