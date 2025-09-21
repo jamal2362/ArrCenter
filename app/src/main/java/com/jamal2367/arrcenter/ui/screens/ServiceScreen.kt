@@ -1,6 +1,7 @@
 package com.jamal2367.arrcenter.ui.screens
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.net.Uri
 import android.view.ViewGroup
 import android.webkit.CookieManager
@@ -37,6 +38,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.core.net.toUri
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("SetJavaScriptEnabled")
@@ -202,6 +204,26 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
                                 }
 
                                 webViewClient = object : WebViewClient() {
+                                    override fun shouldOverrideUrlLoading(view: WebView?, request: android.webkit.WebResourceRequest): Boolean {
+                                        val clickedUrl = request.url.toString()
+
+                                        if (clickedUrl.contains("youtube.com") || clickedUrl.contains("youtu.be")) {
+                                            val intent =
+                                                Intent(Intent.ACTION_VIEW, clickedUrl.toUri())
+                                            intent.setPackage("com.google.android.youtube")
+
+                                            if (intent.resolveActivity(ctx.packageManager) == null) {
+                                                intent.setPackage(null)
+                                            }
+
+                                            ctx.startActivity(intent)
+                                            return true
+                                        }
+
+                                        return false
+                                    }
+
+
                                     override fun onPageFinished(view: WebView?, url: String?) {
                                         super.onPageFinished(view, url)
                                         swipeRefreshLayout.isRefreshing = false
