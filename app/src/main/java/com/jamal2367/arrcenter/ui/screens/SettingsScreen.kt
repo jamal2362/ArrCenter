@@ -65,7 +65,7 @@ fun SettingsScreen(onSaved: () -> Unit = {}) {
         ) {
             Text(
                 text = stringResource(R.string.settings),
-                style = MaterialTheme.typography.headlineLarge,
+                style = MaterialTheme.typography.displaySmall,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 32.dp)
