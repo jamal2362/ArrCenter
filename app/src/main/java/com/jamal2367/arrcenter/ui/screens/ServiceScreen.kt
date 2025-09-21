@@ -2,6 +2,7 @@ package com.jamal2367.arrcenter.ui.screens
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.res.Configuration
 import android.net.Uri
 import android.view.ViewGroup
 import android.webkit.CookieManager
@@ -230,6 +231,8 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
                             webView.reload()
                             swipeRefreshLayout.isRefreshing = true
                         }
+
+                        swipeRefreshLayout.isEnabled = !(context.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE && (type == ServiceType.Radarr || type == ServiceType.Sonarr))
 
                         swipeRefreshLayout.addView(webView)
                         swipeRefreshLayout
