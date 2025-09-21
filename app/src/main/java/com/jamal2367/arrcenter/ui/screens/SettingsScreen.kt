@@ -166,6 +166,7 @@ fun SettingsSection(
         Column(modifier = Modifier.padding(20.dp)) {
             Text(
                 text = title,
+                color = MaterialTheme.colorScheme.onSurface,
                 style = MaterialTheme.typography.titleLarge
             )
 
@@ -176,6 +177,9 @@ fun SettingsSection(
                 onValueChange = onPrimaryChange,
                 label = { Text(stringResource(R.string.primary_url)) },
                 modifier = Modifier.fillMaxWidth(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.onSurface),
                 singleLine = true
             )
 
@@ -186,6 +190,9 @@ fun SettingsSection(
                 onValueChange = onSecondaryChange,
                 label = { Text(stringResource(R.string.secondary_url)) },
                 modifier = Modifier.fillMaxWidth(),
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedLabelColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.onSurface),
                 singleLine = true
             )
         }
