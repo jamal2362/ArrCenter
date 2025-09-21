@@ -3,15 +3,13 @@ package com.jamal2367.arrcenter.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
@@ -58,10 +56,12 @@ fun SettingsScreen(onSaved: () -> Unit = {}) {
                 .background(MaterialTheme.colorScheme.surfaceContainer)
                 .verticalScroll(scrollState)
                 .padding(
-                    bottom = inner.calculateBottomPadding(),
-                    start = 12.dp,
-                    end = 12.dp
-                )
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = inner.calculateTopPadding(),
+                    bottom = inner.calculateBottomPadding()
+                ),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
                 text = stringResource(R.string.settings),
@@ -111,8 +111,6 @@ fun SettingsScreen(onSaved: () -> Unit = {}) {
                 onSecondaryChange = { ugreenSecondary = it }
             )
 
-            Spacer(Modifier.height(8.dp))
-
             Button(
                 onClick = {
                     scope.launch {
@@ -138,8 +136,13 @@ fun SettingsScreen(onSaved: () -> Unit = {}) {
                 },
                 modifier = Modifier
                     .fillMaxWidth()
+                    .align(Alignment.CenterHorizontally),
+                shape = MaterialTheme.shapes.extraLarge
             ) {
-                Text(stringResource(R.string.save))
+                Text(
+                    text = stringResource(R.string.save),
+                    style = MaterialTheme.typography.labelLarge
+                )
             }
         }
     }
@@ -153,43 +156,38 @@ fun SettingsSection(
     secondaryValue: String,
     onSecondaryChange: (String) -> Unit
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp)
-            .shadow(6.dp, RoundedCornerShape(24.dp))
-            .background(
-                color = MaterialTheme.colorScheme.onSecondary,
-                shape = RoundedCornerShape(24.dp)
-            )
-            .padding(16.dp)
+    Card(
+        shape = MaterialTheme.shapes.extraLarge,
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+        )
     ) {
-        Column {
+        Column(modifier = Modifier.padding(20.dp)) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleLarge
             )
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(12.dp))
 
             OutlinedTextField(
                 value = primaryValue,
                 onValueChange = onPrimaryChange,
-                label = { Text(stringResource(R.string.primary_url), maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                label = { Text(stringResource(R.string.primary_url)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(12.dp))
 
             OutlinedTextField(
                 value = secondaryValue,
                 onValueChange = onSecondaryChange,
-                label = { Text(stringResource(R.string.secondary_url), maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                label = { Text(stringResource(R.string.secondary_url)) },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
         }
     }
 }
-
