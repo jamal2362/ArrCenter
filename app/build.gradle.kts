@@ -1,7 +1,7 @@
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android") version "2.2.20"
-    id("org.jetbrains.kotlin.plugin.compose") version "2.2.20"
+    id("org.jetbrains.kotlin.android") version "2.3.0"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.3.0"
 }
 
 android {
@@ -58,9 +58,9 @@ dependencies {
     val composeBom = platform("androidx.compose:compose-bom:2025.08.00")
 
     implementation(composeBom)
-    implementation("androidx.compose.material3:material3:1.3.2")
+    implementation("androidx.compose.material3:material3:1.4.0")
     implementation("androidx.core:core-ktx:1.17.0")
-    implementation("androidx.datastore:datastore-preferences:1.1.7")
-    implementation("androidx.navigation:navigation-compose:2.9.4")
-    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+    implementation("androidx.datastore:datastore-preferences:1.2.0")
+    implementation("androidx.navigation:navigation-compose:2.9.6")
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.2.0")
 }
