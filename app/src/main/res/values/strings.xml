@@ -12,5 +12,5 @@
     <string name="no_connection">No connection could be established.</string>
     <string name="retry">Try again</string>
     <string name="sabnzbd">SABnzbd</string>
-    <string name="ugreen">Ugreen NAS</string>
+    <string name="uvs">UVS</string>
 </resources>

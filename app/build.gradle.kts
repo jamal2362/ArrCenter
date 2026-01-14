@@ -59,6 +59,7 @@ dependencies {
 
     implementation(composeBom)
     implementation("androidx.compose.material3:material3:1.4.0")
+    implementation("androidx.compose.material:material-icons-core:1.7.8")
     implementation("androidx.core:core-ktx:1.17.0")
     implementation("androidx.datastore:datastore-preferences:1.2.0")
     implementation("androidx.navigation:navigation-compose:2.9.6")

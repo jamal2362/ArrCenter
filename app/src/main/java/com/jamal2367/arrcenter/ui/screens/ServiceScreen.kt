@@ -74,7 +74,7 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
             ServiceType.Radarr -> prefs[SettingsKeys.RADARR_PRIMARY] to prefs[SettingsKeys.RADARR_SECONDARY]
             ServiceType.Sonarr -> prefs[SettingsKeys.SONARR_PRIMARY] to prefs[SettingsKeys.SONARR_SECONDARY]
             ServiceType.SABnzbd -> prefs[SettingsKeys.SABNZBD_PRIMARY] to prefs[SettingsKeys.SABNZBD_SECONDARY]
-            ServiceType.Ugreen -> prefs[SettingsKeys.UGREEN_PRIMARY] to prefs[SettingsKeys.UGREEN_SECONDARY]
+            ServiceType.Uvs -> prefs[SettingsKeys.UVS_PRIMARY] to prefs[SettingsKeys.UVS_SECONDARY]
         }
 
         val candidate = withContext(Dispatchers.IO) {
@@ -176,7 +176,7 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
                             cookieManager.setAcceptCookie(true)
                             cookieManager.setAcceptThirdPartyCookies(this, true)
 
-                            if (type == ServiceType.SABnzbd || type == ServiceType.Ugreen) {
+                            if (type == ServiceType.SABnzbd) {
                                 settings.useWideViewPort = true
                                 settings.loadWithOverviewMode = true
                                 settings.userAgentString = isDesktopMode()
@@ -205,7 +205,7 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
                                         injectCSS(it)
                                     }
 
-                                    if (type == ServiceType.SABnzbd || type == ServiceType.Ugreen) {
+                                    if (type == ServiceType.SABnzbd || type == ServiceType.Uvs) {
                                         view?.evaluateJavascript(isJS(), null)
                                     }
                                 }
@@ -213,8 +213,6 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
                                 override fun onReceivedError(view: WebView?, request: android.webkit.WebResourceRequest?, error: android.webkit.WebResourceError?) {
                                     super.onReceivedError(view, request, error)
                                     swipeRefreshLayout.isRefreshing = false
-
-                                    isError = type != ServiceType.Ugreen
                                 }
                             }
 

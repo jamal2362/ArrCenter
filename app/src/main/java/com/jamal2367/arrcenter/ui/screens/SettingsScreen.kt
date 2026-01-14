@@ -33,8 +33,8 @@ fun SettingsScreen(onSaved: () -> Unit = {}) {
     var sonarrSecondary by remember { mutableStateOf("") }
     var sabnzbdPrimary by remember { mutableStateOf("") }
     var sabnzbdSecondary by remember { mutableStateOf("") }
-    var ugreenPrimary by remember { mutableStateOf("") }
-    var ugreenSecondary by remember { mutableStateOf("") }
+    var uvsPrimary by remember { mutableStateOf("") }
+    var uvsSecondary by remember { mutableStateOf("") }
 
     LaunchedEffect(prefsFlow.value) {
         jellyPrimary = prefsFlow.value[SettingsKeys.JELLY_PRIMARY] ?: ""
@@ -45,8 +45,8 @@ fun SettingsScreen(onSaved: () -> Unit = {}) {
         sonarrSecondary = prefsFlow.value[SettingsKeys.SONARR_SECONDARY] ?: ""
         sabnzbdPrimary = prefsFlow.value[SettingsKeys.SABNZBD_PRIMARY] ?: ""
         sabnzbdSecondary = prefsFlow.value[SettingsKeys.SABNZBD_SECONDARY] ?: ""
-        ugreenPrimary = prefsFlow.value[SettingsKeys.UGREEN_PRIMARY] ?: ""
-        ugreenSecondary = prefsFlow.value[SettingsKeys.UGREEN_SECONDARY] ?: ""
+        uvsPrimary = prefsFlow.value[SettingsKeys.UVS_PRIMARY] ?: ""
+        uvsSecondary = prefsFlow.value[SettingsKeys.UVS_SECONDARY] ?: ""
     }
 
     Scaffold { inner ->
@@ -104,11 +104,11 @@ fun SettingsScreen(onSaved: () -> Unit = {}) {
             )
 
             SettingsSection(
-                title = stringResource(R.string.ugreen),
-                primaryValue = ugreenPrimary,
-                onPrimaryChange = { ugreenPrimary = it },
-                secondaryValue = ugreenSecondary,
-                onSecondaryChange = { ugreenSecondary = it }
+                title = stringResource(R.string.uvs),
+                primaryValue = uvsPrimary,
+                onPrimaryChange = { uvsPrimary = it },
+                secondaryValue = uvsSecondary,
+                onSecondaryChange = { uvsSecondary = it }
             )
 
             Button(
@@ -123,8 +123,8 @@ fun SettingsScreen(onSaved: () -> Unit = {}) {
                             e[SettingsKeys.SONARR_SECONDARY] = sonarrSecondary
                             e[SettingsKeys.SABNZBD_PRIMARY] = sabnzbdPrimary
                             e[SettingsKeys.SABNZBD_SECONDARY] = sabnzbdSecondary
-                            e[SettingsKeys.UGREEN_PRIMARY] = ugreenPrimary
-                            e[SettingsKeys.UGREEN_SECONDARY] = ugreenSecondary
+                            e[SettingsKeys.UVS_PRIMARY] = uvsPrimary
+                            e[SettingsKeys.UVS_SECONDARY] = uvsSecondary
                         }
                         android.widget.Toast.makeText(
                             context,

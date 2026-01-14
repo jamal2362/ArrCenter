@@ -16,6 +16,6 @@ object SettingsKeys {
     val SONARR_SECONDARY: Preferences.Key<String> = stringPreferencesKey("sonarr_secondary")
     val SABNZBD_PRIMARY: Preferences.Key<String> = stringPreferencesKey("sabnzbd_primary")
     val SABNZBD_SECONDARY: Preferences.Key<String> = stringPreferencesKey("sabnzbd_secondary")
-    val UGREEN_PRIMARY: Preferences.Key<String> = stringPreferencesKey("ugreen_primary")
-    val UGREEN_SECONDARY: Preferences.Key<String> = stringPreferencesKey("ugreen_secondary")
+    val UVS_PRIMARY: Preferences.Key<String> = stringPreferencesKey("uvs_primary")
+    val UVS_SECONDARY: Preferences.Key<String> = stringPreferencesKey("uvs_secondary")
 }

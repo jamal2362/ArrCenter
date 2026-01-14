@@ -35,7 +35,7 @@ fun AppRoot(
         "radarr" -> Color(0xFF202020)
         "sonarr" -> Color(0xFF202020)
         "sabnzbd" -> Color(0xFF000000)
-        "ugreen" -> Color(0xFF012A4A)
+        "uvs" -> Color(0xFF1E1E2E)
         else -> MaterialTheme.colorScheme.surfaceContainer
     }
 
@@ -56,14 +56,13 @@ fun AppRoot(
             composable("radarr") { ServiceScreen(ServiceType.Radarr, backgroundColor = backgroundColor, onShowSheet = { showSheet = true }) }
             composable("sonarr") { ServiceScreen(ServiceType.Sonarr, backgroundColor = backgroundColor, onShowSheet = { showSheet = true }) }
             composable("sabnzbd") { ServiceScreen(ServiceType.SABnzbd, backgroundColor = backgroundColor, onShowSheet = { showSheet = true }) }
-            composable("ugreen") { ServiceScreen(ServiceType.Ugreen, backgroundColor = backgroundColor, onShowSheet = { showSheet = true }) }
+            composable("uvs") { ServiceScreen(ServiceType.Uvs, backgroundColor = backgroundColor, onShowSheet = { showSheet = true }) }
             composable("settings") { SettingsScreen(onSaved = {}) }
         }
 
         if (showSheet) {
             ModalBottomSheet(
                 onDismissRequest = {
-                    showSheet = false
                     onShowSheetChange?.invoke(false)
                 },
                 sheetState = sheetState,
@@ -82,7 +81,7 @@ fun AppRoot(
                         }
                         coroutineScope.launch {
                             sheetState.hide()
-                        }.invokeOnCompletion { showSheet = false }
+                        }.invokeOnCompletion { }
                     }
 
                 }

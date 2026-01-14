@@ -36,7 +36,7 @@ fun SheetItem(
         Triple("radarr", R.drawable.ic_radarr_24dp, R.string.radarr),
         Triple("sonarr", R.drawable.ic_sonarr_24dp, R.string.sonarr),
         Triple("sabnzbd", R.drawable.ic_sabnzbd_24dp, R.string.sabnzbd),
-        Triple("ugreen", R.drawable.ic_storage_24dp, R.string.ugreen),
+        Triple("uvs", R.drawable.ic_uvs_24dp, R.string.uvs),
         Triple("settings", null, R.string.settings)
     )
 

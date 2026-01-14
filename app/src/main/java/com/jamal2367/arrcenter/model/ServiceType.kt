@@ -5,5 +5,5 @@ enum class ServiceType {
     Radarr,
     Sonarr,
     SABnzbd,
-    Ugreen
+    Uvs
 }
