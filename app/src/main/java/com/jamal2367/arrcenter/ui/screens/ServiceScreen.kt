@@ -11,11 +11,14 @@ import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -33,6 +36,7 @@ import com.jamal2367.arrcenter.data.dataStore
 import com.jamal2367.arrcenter.helper.*
 import com.jamal2367.arrcenter.model.ServiceType
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -50,6 +54,16 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
     var isLoading by remember { mutableStateOf(true) }
     var isError by remember { mutableStateOf(false) }
     var webView by remember { mutableStateOf<WebView?>(null) }
+    var fabVisible by remember { mutableStateOf(false) }
+    var fabTrigger by remember { mutableLongStateOf(0L) }
+
+    // FAB nach 5 Sekunden automatisch ausblenden
+    LaunchedEffect(fabTrigger) {
+        if (fabVisible) {
+            delay(5000L)
+            fabVisible = false
+        }
+    }
 
     val fileChooserLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
@@ -106,7 +120,27 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
         onDispose { callback.remove() }
     }
 
-    Scaffold { innerPadding ->
+    Scaffold(
+        floatingActionButton = {
+            AnimatedVisibility(
+                visible = fabVisible && !isLoading && !isError && currentUrl != null,
+                enter = fadeIn() + scaleIn(),
+                exit = fadeOut() + scaleOut()
+            ) {
+                SmallFloatingActionButton(
+                    onClick = { webView?.reload() },
+                    shape = CircleShape,
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Refresh,
+                        contentDescription = null
+                    )
+                }
+            }
+        }
+    ) { innerPadding ->
         when {
             isLoading -> Box(
                 modifier = Modifier
@@ -157,7 +191,7 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
                     factory = { ctx ->
                         val cookieManager = CookieManager.getInstance()
 
-                        val webView = WebView(ctx).apply {
+                        WebView(ctx).apply {
                             layoutParams = ViewGroup.LayoutParams(
                                 ViewGroup.LayoutParams.MATCH_PARENT,
                                 ViewGroup.LayoutParams.MATCH_PARENT
@@ -177,6 +211,12 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
                                 settings.useWideViewPort = true
                                 settings.loadWithOverviewMode = true
                                 settings.userAgentString = isDesktopMode()
+                            }
+                            
+                            setOnScrollChangeListener { _, _, scrollY, _, oldScrollY ->
+                                if (scrollY != oldScrollY) {
+                                    fabVisible = true
+                                }
                             }
 
                             webViewClient = object : WebViewClient() {
@@ -212,8 +252,7 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
                             }
 
                             loadUrl(url)
-                        }
-                        webView
+                        }.also { webView = it }
                     }
                 )
             }
