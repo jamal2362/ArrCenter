@@ -163,10 +163,6 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
                                 ViewGroup.LayoutParams.MATCH_PARENT,
                                 ViewGroup.LayoutParams.MATCH_PARENT
                             )
-                            
-                            setOnRefreshListener {
-                                webView?.reload()
-                            }
                         }
 
                         val webViewInstance = WebView(ctx).also { webView = it }.apply {
@@ -225,6 +221,10 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
                             }
 
                             loadUrl(url)
+                        }
+                        
+                        swipeRefreshLayout.setOnRefreshListener {
+                            webViewInstance.reload()
                         }
                         
                         swipeRefreshLayout.addView(webViewInstance)
