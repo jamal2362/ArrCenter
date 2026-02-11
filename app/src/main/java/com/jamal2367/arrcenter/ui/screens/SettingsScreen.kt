@@ -145,6 +145,8 @@ fun SettingsScreen(onSaved: () -> Unit = {}) {
                     style = MaterialTheme.typography.labelLarge
                 )
             }
+
+            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
