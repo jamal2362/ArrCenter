@@ -1,7 +1,7 @@
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android") version "2.3.0"
-    id("org.jetbrains.kotlin.plugin.compose") version "2.3.0"
+    id("org.jetbrains.kotlin.android") version "2.3.10"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.3.10"
 }
 
 android {
@@ -41,7 +41,7 @@ android {
                 "proguard-rules.pro"
             )
         }
-		
+
         debug {
             isMinifyEnabled = false
             isShrinkResources = false
@@ -80,6 +80,6 @@ dependencies {
     implementation("androidx.compose.material:material-icons-core:1.7.8")
     implementation("androidx.core:core-ktx:1.17.0")
     implementation("androidx.datastore:datastore-preferences:1.2.0")
-    implementation("androidx.navigation:navigation-compose:2.9.6")
+    implementation("androidx.navigation:navigation-compose:2.9.7")
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.2.0")
 }
