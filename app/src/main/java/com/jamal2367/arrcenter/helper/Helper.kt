@@ -126,6 +126,28 @@ fun isDesktopMode(): String {
     return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36"
 }
 
+fun injectJS(webView: WebView) {
+    val js = """
+        javascript:(function () {
+            const collapse = document.querySelector('.collapse');
+            if (!collapse) return;
+
+            // Bootstrap glaubt: "ist offen"
+            collapse.classList.add('show');
+
+            // Click outside -> schließen
+            document.addEventListener('click', function (e) {
+                if (!collapse.contains(e.target)) {
+                    collapse.classList.remove('show');
+                }
+            }, true);
+        })();
+    """.trimIndent()
+
+    webView.evaluateJavascript(js, null)
+}
+
+
 fun injectCSS(webView: WebView) {
     val cssInjection = """
         javascript:(function() {
@@ -145,6 +167,18 @@ fun injectCSS(webView: WebView) {
                 
                 .container-full-width .container {
                   width: 98%;
+                }
+                
+                .navbar-toggle {
+                  margin-right: 0px;
+                }
+                
+                .navbar-logo {
+                  margin-left: 0px;
+                }
+                
+                .navbar-nav .open .dropdown-menu {
+                  float: right;
                 }
                 
                 [class*="wallpaper-wrapper"] {

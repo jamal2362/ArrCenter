@@ -263,6 +263,7 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
 
                                     view?.let {
                                         injectCSS(it)
+                                        injectJS(it)
                                     }
                                 }
                             }
