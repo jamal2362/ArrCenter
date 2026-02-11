@@ -15,7 +15,7 @@ import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Refresh
@@ -24,7 +24,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -120,25 +124,78 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
     }
 
     Scaffold(
-        floatingActionButton = {
+        bottomBar = {
             AnimatedVisibility(
                 visible = fabVisible && !isLoading && !isError && currentUrl != null,
-                enter = fadeIn() + slideInHorizontally(initialOffsetX = { it }),
-                exit = fadeOut() + slideOutHorizontally(targetOffsetX = { it })
+                enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
+                exit = fadeOut() + slideOutVertically(targetOffsetY = { it })
             ) {
-                SmallFloatingActionButton(
-                    onClick = { webView?.reload() },
-                    shape = CircleShape,
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.Transparent),
+                    contentAlignment = Alignment.BottomCenter
                 ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Refresh,
-                        contentDescription = null
-                    )
+                    Surface(
+                        onClick = { webView?.reload() },
+                        modifier = Modifier
+                            .padding(horizontal = 150.dp, vertical = 0.dp)
+                            .padding(bottom = 0.dp)
+                            .drawBehind {
+                                val borderWidth = 2.dp.toPx()
+                                val cornerRadius = 24.dp.toPx()
+
+                                // Zeichne Border nur oben und an den Seiten
+                                drawPath(
+                                    path = Path().apply {
+                                        // Starte unten links
+                                        moveTo(0f, size.height)
+                                        // Links nach oben
+                                        lineTo(0f, cornerRadius)
+                                        // Obere linke Ecke (abgerundet)
+                                        arcTo(
+                                            rect = Rect(0f, 0f, cornerRadius * 2, cornerRadius * 2),
+                                            startAngleDegrees = 180f,
+                                            sweepAngleDegrees = 90f,
+                                            forceMoveTo = false
+                                        )
+                                        // Oben nach rechts
+                                        lineTo(size.width - cornerRadius, 0f)
+                                        // Obere rechte Ecke (abgerundet)
+                                        arcTo(
+                                            rect = Rect(size.width - cornerRadius * 2, 0f, size.width, cornerRadius * 2),
+                                            startAngleDegrees = 270f,
+                                            sweepAngleDegrees = 90f,
+                                            forceMoveTo = false
+                                        )
+                                        // Rechts nach unten
+                                        lineTo(size.width, size.height)
+                                    },
+                                    color = Color.White,
+                                    style = Stroke(width = borderWidth)
+                                )
+                            },
+                        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp, bottomStart = 0.dp, bottomEnd = 0.dp),
+                        color = backgroundColor,
+                        tonalElevation = 0.dp
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 12.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Refresh,
+                                contentDescription = "Reload",
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+                    }
                 }
             }
-        }
+        },
     ) { innerPadding ->
         when {
             isLoading -> Box(
