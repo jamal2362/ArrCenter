@@ -69,6 +69,7 @@ fun AppRoot(
                 },
                 sheetState = sheetState,
                 containerColor = backgroundColor.darken(0.33f),
+                scrimColor = Color.Black.copy(alpha = 0.15f),
             ) {
                 Column(
                     modifier = Modifier
