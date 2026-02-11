@@ -55,9 +55,8 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
     var isError by remember { mutableStateOf(false) }
     var webView by remember { mutableStateOf<WebView?>(null) }
     var fabVisible by remember { mutableStateOf(false) }
-    var fabTrigger by remember { mutableLongStateOf(0L) }
+    var fabTrigger by remember { mutableStateOf(false) }
 
-    // FAB nach 5 Sekunden automatisch ausblenden
     LaunchedEffect(fabTrigger) {
         if (fabVisible) {
             delay(5000L)
@@ -124,8 +123,8 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
         floatingActionButton = {
             AnimatedVisibility(
                 visible = fabVisible && !isLoading && !isError && currentUrl != null,
-                enter = fadeIn() + scaleIn(),
-                exit = fadeOut() + scaleOut()
+                enter = fadeIn() + slideInHorizontally(initialOffsetX = { it }),
+                exit = fadeOut() + slideOutHorizontally(targetOffsetX = { it })
             ) {
                 SmallFloatingActionButton(
                     onClick = { webView?.reload() },
@@ -212,10 +211,11 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
                                 settings.loadWithOverviewMode = true
                                 settings.userAgentString = isDesktopMode()
                             }
-                            
+
                             setOnScrollChangeListener { _, _, scrollY, _, oldScrollY ->
                                 if (scrollY != oldScrollY) {
                                     fabVisible = true
+                                    fabTrigger = !fabTrigger
                                 }
                             }
 
