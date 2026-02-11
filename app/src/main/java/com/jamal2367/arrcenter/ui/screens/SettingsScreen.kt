@@ -136,6 +136,7 @@ fun SettingsScreen(onSaved: () -> Unit = {}) {
                 },
                 modifier = Modifier
                     .fillMaxWidth()
+                    .height(52.dp)
                     .align(Alignment.CenterHorizontally),
                 shape = MaterialTheme.shapes.extraLarge,
                 colors = ButtonDefaults.buttonColors(
@@ -145,7 +146,7 @@ fun SettingsScreen(onSaved: () -> Unit = {}) {
             ) {
                 Text(
                     text = stringResource(R.string.save),
-                    style = MaterialTheme.typography.labelLarge
+                    style = MaterialTheme.typography.titleMedium
                 )
             }
         }
