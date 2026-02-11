@@ -219,15 +219,16 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
                             webChromeClient = WebChromeClientWithCallback { mimeTypes ->
                                 fileChooserLauncher.launch(mimeTypes)
                             }
-
-                            loadUrl(url)
                         }
-                        
+
                         swipeRefreshLayout.setOnRefreshListener {
                             webViewInstance.reload()
                         }
-                        
+
                         swipeRefreshLayout.addView(webViewInstance)
+
+                        webViewInstance.loadUrl(url)
+
                         swipeRefreshLayout
                     }
                 )
