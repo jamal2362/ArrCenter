@@ -28,8 +28,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.jamal2367.arrcenter.R
+import com.jamal2367.arrcenter.ui.WebViewSwipeRefreshLayout
 import com.jamal2367.arrcenter.data.SettingsKeys
 import com.jamal2367.arrcenter.data.dataStore
 import com.jamal2367.arrcenter.helper.*
@@ -157,7 +157,7 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
                 AndroidView(
                     modifier = Modifier.fillMaxSize(),
                     factory = { ctx ->
-                        val swipeRefreshLayout = SwipeRefreshLayout(ctx)
+                        val swipeRefreshLayout = WebViewSwipeRefreshLayout(ctx)
                         val cookieManager = CookieManager.getInstance()
 
                         val webView = WebView(ctx).apply {
@@ -224,6 +224,7 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
                         }
 
                         webViewRef = webView
+                        swipeRefreshLayout.webView = webView
 
                         swipeRefreshLayout.setOnRefreshListener {
                             webView.reload()
