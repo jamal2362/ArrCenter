@@ -77,11 +77,7 @@ class WebViewSwipeRefreshLayout @JvmOverloads constructor(
             }
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                 // Re-enable on touch end to allow next gesture
-                if (!originalEnabledState) {
-                    super.setEnabled(false)
-                } else {
-                    super.setEnabled(true)
-                }
+                super.setEnabled(originalEnabledState)
                 hasDeterminedDirection = false
             }
         }
