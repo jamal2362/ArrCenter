@@ -8,15 +8,6 @@ android {
     namespace = "com.jamal2367.arrcenter"
     compileSdk = 36
 
-    signingConfigs {
-        create("release") {
-            storeFile = file(System.getenv("KEYSTORE_FILE"))
-            storePassword = System.getenv("KEYSTORE_PASSWORD")
-            keyAlias = System.getenv("KEY_ALIAS")
-            keyPassword = System.getenv("KEY_PASSWORD")
-        }
-    }
-
     defaultConfig {
         applicationId = "com.jamal2367.arrcenter"
         minSdk = 31
@@ -29,9 +20,20 @@ android {
         }
     }
 
+    signingConfigs {
+        if (System.getenv("KEYSTORE_FILE") != null) {
+            create("release") {
+                storeFile = file(System.getenv("KEYSTORE_FILE"))
+                storePassword = System.getenv("KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("KEY_ALIAS")
+                keyPassword = System.getenv("KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("release")
+            signingConfig = signingConfigs.findByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
