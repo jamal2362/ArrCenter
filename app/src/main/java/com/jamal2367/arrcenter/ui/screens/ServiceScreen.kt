@@ -167,7 +167,7 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
                         factory = { ctx ->
                             val cookieManager = CookieManager.getInstance()
 
-                            val webView = WebView(ctx).apply {
+                            WebView(ctx).apply {
                                 layoutParams = ViewGroup.LayoutParams(
                                     ViewGroup.LayoutParams.MATCH_PARENT,
                                     ViewGroup.LayoutParams.MATCH_PARENT
@@ -223,8 +223,8 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
                                 }
 
                                 loadUrl(url)
+                                webView = this
                             }
-                            webView
                         }
                     )
                 }
