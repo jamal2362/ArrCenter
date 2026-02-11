@@ -18,8 +18,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material3.*
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -50,7 +50,6 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
     var currentUrl by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var isError by remember { mutableStateOf(false) }
-    var isRefreshing by remember { mutableStateOf(false) }
     var webView by remember { mutableStateOf<WebView?>(null) }
 
     val fileChooserLauncher = rememberLauncherForActivityResult(
@@ -154,79 +153,84 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
                 }
             }
             else -> currentUrl?.let { url ->
-                PullToRefreshBox(
-                    isRefreshing = isRefreshing,
-                    onRefresh = {
-                        isRefreshing = true
-                        webView?.reload()
-                    },
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    AndroidView(
-                        modifier = Modifier.fillMaxSize(),
-                        factory = { ctx ->
-                            val cookieManager = CookieManager.getInstance()
+                AndroidView(
+                    modifier = Modifier.fillMaxSize(),
+                    factory = { ctx ->
+                        val cookieManager = CookieManager.getInstance()
 
-                            WebView(ctx).also { webView = it }.apply {
-                                layoutParams = ViewGroup.LayoutParams(
-                                    ViewGroup.LayoutParams.MATCH_PARENT,
-                                    ViewGroup.LayoutParams.MATCH_PARENT
-                                )
-                                settings.javaScriptEnabled = true
-                                settings.domStorageEnabled = true
-                                settings.builtInZoomControls = true
-                                settings.displayZoomControls = false
-                                settings.allowFileAccess = true
-                                settings.allowContentAccess = true
-                                settings.setSupportZoom(true)
-
-                                cookieManager.setAcceptCookie(true)
-                                cookieManager.setAcceptThirdPartyCookies(this, true)
-
-                                if (type == ServiceType.SABnzbd) {
-                                    settings.useWideViewPort = true
-                                    settings.loadWithOverviewMode = true
-                                    settings.userAgentString = isDesktopMode()
-                                }
-
-                                webViewClient = object : WebViewClient() {
-                                    override fun shouldOverrideUrlLoading(view: WebView?, request: android.webkit.WebResourceRequest): Boolean {
-                                        val clickedUrl = request.url.toString()
-
-                                        if (clickedUrl.contains("youtube.com") || clickedUrl.contains("youtu.be")) {
-                                            val intent = Intent(Intent.ACTION_VIEW, clickedUrl.toUri())
-                                            intent.setPackage("com.google.android.youtube")
-                                            if (intent.resolveActivity(ctx.packageManager) == null) intent.setPackage(null)
-                                            ctx.startActivity(intent)
-                                            return true
-                                        }
-                                        return false
-                                    }
-
-
-                                    override fun onPageFinished(view: WebView?, url: String?) {
-                                        super.onPageFinished(view, url)
-                                        isRefreshing = false
-
-                                        view?.let {
-                                            injectCSS(it)
-                                        }
-
-                                        if (type == ServiceType.SABnzbd || type == ServiceType.Uvs) {
-                                            view?.evaluateJavascript(isJS(), null)
-                                        }
-                                    }
-                                }
-
-                                webChromeClient = WebChromeClientWithCallback { mimeTypes ->
-                                    fileChooserLauncher.launch(mimeTypes)
-                                }
-
-                                loadUrl(url)
+                        val swipeRefreshLayout = SwipeRefreshLayout(ctx).apply {
+                            layoutParams = ViewGroup.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT
+                            )
+                            
+                            setOnRefreshListener {
+                                webView?.reload()
                             }
                         }
-                    )
-                }
+
+                        val webViewInstance = WebView(ctx).also { webView = it }.apply {
+                            layoutParams = ViewGroup.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT
+                            )
+                            settings.javaScriptEnabled = true
+                            settings.domStorageEnabled = true
+                            settings.builtInZoomControls = true
+                            settings.displayZoomControls = false
+                            settings.allowFileAccess = true
+                            settings.allowContentAccess = true
+                            settings.setSupportZoom(true)
+
+                            cookieManager.setAcceptCookie(true)
+                            cookieManager.setAcceptThirdPartyCookies(this, true)
+
+                            if (type == ServiceType.SABnzbd) {
+                                settings.useWideViewPort = true
+                                settings.loadWithOverviewMode = true
+                                settings.userAgentString = isDesktopMode()
+                            }
+
+                            webViewClient = object : WebViewClient() {
+                                override fun shouldOverrideUrlLoading(view: WebView?, request: android.webkit.WebResourceRequest): Boolean {
+                                    val clickedUrl = request.url.toString()
+
+                                    if (clickedUrl.contains("youtube.com") || clickedUrl.contains("youtu.be")) {
+                                        val intent = Intent(Intent.ACTION_VIEW, clickedUrl.toUri())
+                                        intent.setPackage("com.google.android.youtube")
+                                        if (intent.resolveActivity(ctx.packageManager) == null) intent.setPackage(null)
+                                        ctx.startActivity(intent)
+                                        return true
+                                    }
+                                    return false
+                                }
+
+
+                                override fun onPageFinished(view: WebView?, url: String?) {
+                                    super.onPageFinished(view, url)
+                                    swipeRefreshLayout.isRefreshing = false
+
+                                    view?.let {
+                                        injectCSS(it)
+                                    }
+
+                                    if (type == ServiceType.SABnzbd || type == ServiceType.Uvs) {
+                                        view?.evaluateJavascript(isJS(), null)
+                                    }
+                                }
+                            }
+
+                            webChromeClient = WebChromeClientWithCallback { mimeTypes ->
+                                fileChooserLauncher.launch(mimeTypes)
+                            }
+
+                            loadUrl(url)
+                        }
+                        
+                        swipeRefreshLayout.addView(webViewInstance)
+                        swipeRefreshLayout
+                    }
+                )
             }
         }
     }
