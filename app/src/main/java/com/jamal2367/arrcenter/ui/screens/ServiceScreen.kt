@@ -59,7 +59,7 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
 
     LaunchedEffect(buttonTrigger) {
         if (buttonVisible) {
-            delay(5000L)
+            delay(2000L)
             buttonVisible = false
         }
     }
@@ -129,7 +129,7 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(48.dp),
+                        .height(42.dp),
                     contentAlignment = Alignment.BottomCenter
                 ) {
                     Surface(
@@ -141,7 +141,7 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
                             imageVector = Icons.Rounded.Refresh,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.padding(12.dp)
+                            modifier = Modifier.padding(9.dp)
                         )
                     }
                 }
