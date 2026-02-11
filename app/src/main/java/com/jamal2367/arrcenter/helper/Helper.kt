@@ -19,6 +19,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -28,9 +30,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 @Composable
-fun SheetItem(
-    onClick: (String) -> Unit
-) {
+fun SheetItem(backgroundColor: Color, onClick: (String) -> Unit) {
     val items = listOf(
         Triple("jellyseerr", R.drawable.ic_jellyseerr_24dp, R.string.jellyseerr),
         Triple("radarr", R.drawable.ic_radarr_24dp, R.string.radarr),
@@ -57,7 +57,7 @@ fun SheetItem(
                         modifier = Modifier
                             .weight(1f)
                             .size(80.dp),
-                        color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                        color = backgroundColor,
                         shape = RoundedCornerShape(12.dp),
                         tonalElevation = 2.dp
                     ) {
@@ -70,14 +70,14 @@ fun SheetItem(
                                 Icon(
                                     painter = painterResource(id = iconRes),
                                     contentDescription = route,
-                                    tint = MaterialTheme.colorScheme.primary,
+                                    tint = White.darken(0.1f),
                                     modifier = Modifier.size(36.dp)
                                 )
                             } else {
                                 Icon(
                                     imageVector = Icons.Default.Settings,
                                     contentDescription = route,
-                                    tint = MaterialTheme.colorScheme.primary,
+                                    tint = White.darken(0.1f),
                                     modifier = Modifier.size(36.dp)
                                 )
                             }
@@ -85,7 +85,7 @@ fun SheetItem(
                             Text(
                                 text = stringResource(id = rowItems.first { it.first == route }.third),
                                 style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.primary,
+                                color = White.darken(0.1f),
                                 fontWeight = FontWeight.Bold
                             )
                         }
@@ -111,6 +111,15 @@ fun isReachable(url: String?): Boolean {
     } catch (_: Exception) {
         false
     }
+}
+
+fun Color.darken(fraction: Float): Color {
+    return Color(
+        red = (red * (1 - fraction)).coerceIn(0f, 1f),
+        green = (green * (1 - fraction)).coerceIn(0f, 1f),
+        blue = (blue * (1 - fraction)).coerceIn(0f, 1f),
+        alpha = alpha
+    )
 }
 
 fun isDesktopMode(): String {

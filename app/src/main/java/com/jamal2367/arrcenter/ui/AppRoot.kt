@@ -12,6 +12,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.jamal2367.arrcenter.helper.SheetItem
+import com.jamal2367.arrcenter.helper.darken
 import com.jamal2367.arrcenter.model.ServiceType
 import com.jamal2367.arrcenter.ui.screens.ServiceScreen
 import com.jamal2367.arrcenter.ui.screens.SettingsScreen
@@ -67,7 +68,7 @@ fun AppRoot(
                         showSheet = false
                 },
                 sheetState = sheetState,
-                containerColor = MaterialTheme.colorScheme.surfaceContainer
+                containerColor = backgroundColor.darken(0.33f),
             ) {
                 Column(
                     modifier = Modifier
@@ -75,7 +76,7 @@ fun AppRoot(
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    SheetItem { route ->
+                    SheetItem(backgroundColor = backgroundColor) { route ->
                         navController.navigate(route) {
                             launchSingleTop = true
                             restoreState = true
@@ -84,7 +85,6 @@ fun AppRoot(
                             sheetState.hide()
                         }.invokeOnCompletion { showSheet = false }
                     }
-
                 }
             }
         }
