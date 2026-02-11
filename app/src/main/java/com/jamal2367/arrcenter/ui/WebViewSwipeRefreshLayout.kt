@@ -14,6 +14,9 @@ class WebViewSwipeRefreshLayout @JvmOverloads constructor(
 
     var webView: WebView? = null
     private var canChildScrollUpValue = false
+    private var initialY = 0f
+    private var hasDeterminedDirection = false
+    private var originalEnabledState = true
 
     @SuppressLint("SetJavaScriptEnabled")
     fun updateScrollPosition() {
@@ -44,9 +47,43 @@ class WebViewSwipeRefreshLayout @JvmOverloads constructor(
         return canChildScrollUpValue
     }
 
+    override fun setEnabled(enabled: Boolean) {
+        super.setEnabled(enabled)
+        originalEnabledState = enabled
+    }
+
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
-        if (ev.actionMasked == MotionEvent.ACTION_DOWN) {
-            updateScrollPosition()
+        when (ev.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                initialY = ev.y
+                hasDeterminedDirection = false
+                updateScrollPosition()
+            }
+            MotionEvent.ACTION_MOVE -> {
+                if (!hasDeterminedDirection && !canChildScrollUp()) {
+                    val deltaY = ev.y - initialY
+                    // If user is scrolling down (finger moving down, positive delta)
+                    // disable swipe refresh temporarily
+                    if (deltaY > 10) {
+                        // This is a downward scroll, not a pull-to-refresh
+                        hasDeterminedDirection = true
+                        super.setEnabled(false)
+                        return false
+                    } else if (deltaY < -10) {
+                        // This is an upward pull (pull-to-refresh gesture)
+                        hasDeterminedDirection = true
+                    }
+                }
+            }
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                // Re-enable on touch end to allow next gesture
+                if (!originalEnabledState) {
+                    super.setEnabled(false)
+                } else {
+                    super.setEnabled(true)
+                }
+                hasDeterminedDirection = false
+            }
         }
         return super.onInterceptTouchEvent(ev)
     }
