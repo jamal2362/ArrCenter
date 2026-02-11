@@ -9,7 +9,7 @@ import com.jamal2367.arrcenter.ui.theme.AppTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        actionBar?.hide()
+        setTheme(android.R.style.Theme_DeviceDefault_NoActionBar)
 
         setContent {
             AppTheme {
