@@ -42,9 +42,11 @@ class WebViewSwipeRefreshLayout @JvmOverloads constructor(
     }
 
     override fun canChildScrollUp(): Boolean {
-        val wv = webView
-        if (wv != null && wv.scrollY > 0) return true
-        return canChildScrollUpValue
+        val wv = webView ?: return false
+        // Only check native WebView scroll position (synchronous and reliable)
+        // Don't use canChildScrollUpValue here as it's async and can cause race conditions
+        // The parent SwipeRefreshLayout calls this frequently during touch handling
+        return wv.scrollY > 0
     }
 
     override fun setEnabled(enabled: Boolean) {
