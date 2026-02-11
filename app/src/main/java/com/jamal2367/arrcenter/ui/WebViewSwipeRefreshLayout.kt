@@ -62,7 +62,7 @@ class WebViewSwipeRefreshLayout @JvmOverloads constructor(
             MotionEvent.ACTION_MOVE -> {
                 // First check: Use synchronous native scroll position as fast path
                 val wv = webView
-                val isAtTop = (wv == null || wv.scrollY == 0) && !canChildScrollUpValue
+                val isAtTop = wv != null && wv.scrollY == 0 && !canChildScrollUpValue
                 
                 if (!hasDeterminedDirection && isAtTop) {
                     val deltaY = ev.y - initialY
