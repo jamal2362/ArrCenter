@@ -264,10 +264,6 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
                                     view?.let {
                                         injectCSS(it)
                                     }
-
-                                    if (type == ServiceType.SABnzbd || type == ServiceType.Uvs) {
-                                        view?.evaluateJavascript(isJS(), null)
-                                    }
                                 }
                             }
 
