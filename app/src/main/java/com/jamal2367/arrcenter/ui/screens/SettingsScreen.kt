@@ -50,6 +50,7 @@ fun SettingsScreen(onSaved: () -> Unit = {}) {
     }
 
     Scaffold { inner ->
+        modifier = Modifier.fillMaxSize()
         Column(
             modifier = Modifier
                 .fillMaxSize()
