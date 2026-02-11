@@ -64,6 +64,7 @@ fun AppRoot(
             ModalBottomSheet(
                 onDismissRequest = {
                     onShowSheetChange?.invoke(false)
+                        showSheet = false
                 },
                 sheetState = sheetState,
                 containerColor = MaterialTheme.colorScheme.surfaceContainer
@@ -81,7 +82,7 @@ fun AppRoot(
                         }
                         coroutineScope.launch {
                             sheetState.hide()
-                        }.invokeOnCompletion { }
+                        }.invokeOnCompletion { showSheet = false }
                     }
 
                 }
