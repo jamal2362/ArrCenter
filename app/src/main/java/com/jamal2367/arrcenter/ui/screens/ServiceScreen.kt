@@ -54,13 +54,13 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
     var isLoading by remember { mutableStateOf(true) }
     var isError by remember { mutableStateOf(false) }
     var webView by remember { mutableStateOf<WebView?>(null) }
-    var fabVisible by remember { mutableStateOf(false) }
-    var fabTrigger by remember { mutableStateOf(false) }
+    var buttonVisible by remember { mutableStateOf(false) }
+    var buttonTrigger by remember { mutableStateOf(false) }
 
-    LaunchedEffect(fabTrigger) {
-        if (fabVisible) {
+    LaunchedEffect(buttonTrigger) {
+        if (buttonVisible) {
             delay(5000L)
-            fabVisible = false
+            buttonVisible = false
         }
     }
 
@@ -122,7 +122,7 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
     Scaffold(
         bottomBar = {
             AnimatedVisibility(
-                visible = fabVisible && !isLoading && !isError && currentUrl != null,
+                visible = buttonVisible && !isLoading && !isError && currentUrl != null,
                 enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
                 exit = fadeOut() + slideOutVertically(targetOffsetY = { it })
             ) {
@@ -199,7 +199,7 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
                         .fillMaxSize()
                         .background(backgroundColor)
                         .padding(bottom = animateDpAsState(
-                            targetValue = if (fabVisible && !isLoading && !isError && currentUrl != null)
+                            targetValue = if (buttonVisible && !isLoading && !isError && currentUrl != null)
                                 innerPadding.calculateBottomPadding()
                             else 0.dp,
                             label = "bottomPadding"
@@ -229,11 +229,17 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
                                 settings.userAgentString = isDesktopMode()
                             }
 
-                            setOnScrollChangeListener { _, _, scrollY, _, oldScrollY ->
-                                if (scrollY != oldScrollY) {
-                                    fabVisible = true
-                                    fabTrigger = !fabTrigger
+                            setOnTouchListener { v, event ->
+                                when (event.action) {
+                                    android.view.MotionEvent.ACTION_DOWN -> {
+                                        buttonVisible = true
+                                        buttonTrigger = !buttonTrigger
+                                    }
+                                    android.view.MotionEvent.ACTION_UP -> {
+                                        v.performClick()
+                                    }
                                 }
+                                false
                             }
 
                             webViewClient = object : WebViewClient() {
