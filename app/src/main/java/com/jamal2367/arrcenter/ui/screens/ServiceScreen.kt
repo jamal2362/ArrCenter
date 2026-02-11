@@ -158,13 +158,6 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
                     factory = { ctx ->
                         val cookieManager = CookieManager.getInstance()
 
-                        val swipeRefreshLayout = SwipeRefreshLayout(ctx).apply {
-                            layoutParams = ViewGroup.LayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.MATCH_PARENT
-                            )
-                        }
-
                         val webViewInstance = WebView(ctx).also { webView = it }.apply {
                             layoutParams = ViewGroup.LayoutParams(
                                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -218,6 +211,19 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
 
                             webChromeClient = WebChromeClientWithCallback { mimeTypes ->
                                 fileChooserLauncher.launch(mimeTypes)
+                            }
+                        }
+
+                        val swipeRefreshLayout = SwipeRefreshLayout(ctx).apply {
+                            layoutParams = ViewGroup.LayoutParams(
+                                ViewGroup.LayoutParams.MATCH_PARENT,
+                                ViewGroup.LayoutParams.MATCH_PARENT
+                            )
+                            
+                            // Only enable pull-to-refresh when WebView is at the top
+                            // This prevents interference with scrolling in dialogs or other content
+                            setOnChildScrollUpCallback { _, _ ->
+                                webViewInstance.scrollY > 0
                             }
                         }
 
