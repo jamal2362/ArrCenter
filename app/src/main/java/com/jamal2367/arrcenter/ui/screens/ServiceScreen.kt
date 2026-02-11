@@ -2,7 +2,6 @@ package com.jamal2367.arrcenter.ui.screens
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.content.res.Configuration
 import android.net.Uri
 import android.view.ViewGroup
 import android.webkit.CookieManager
@@ -28,7 +27,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.jamal2367.arrcenter.R
 import com.jamal2367.arrcenter.data.SettingsKeys
 import com.jamal2367.arrcenter.data.dataStore
@@ -51,14 +49,14 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
     var currentUrl by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(true) }
     var isError by remember { mutableStateOf(false) }
-    var webViewRef by remember { mutableStateOf<WebView?>(null) }
+    var webView by remember { mutableStateOf<WebView?>(null) }
 
     val fileChooserLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument(),
         onResult = { uri: Uri? ->
-            val callback = (webViewRef?.webChromeClient as? WebChromeClientWithCallback)?.filePathCallback
+            val callback = (webView?.webChromeClient as? WebChromeClientWithCallback)?.filePathCallback
             callback?.onReceiveValue(uri?.let { arrayOf(it) } ?: emptyArray())
-            (webViewRef?.webChromeClient as? WebChromeClientWithCallback)?.filePathCallback = null
+            (webView?.webChromeClient as? WebChromeClientWithCallback)?.filePathCallback = null
         }
     )
 
@@ -97,8 +95,8 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
     DisposableEffect(activity) {
         val callback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (webViewRef?.canGoBack() == true) {
-                    webViewRef?.goBack()
+                if (webView?.canGoBack() == true) {
+                    webView?.goBack()
                 } else {
                     onShowSheet?.invoke()
                 }
@@ -157,7 +155,6 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
                 AndroidView(
                     modifier = Modifier.fillMaxSize(),
                     factory = { ctx ->
-                        val swipeRefreshLayout = SwipeRefreshLayout(ctx)
                         val cookieManager = CookieManager.getInstance()
 
                         val webView = WebView(ctx).apply {
@@ -199,7 +196,6 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
 
                                 override fun onPageFinished(view: WebView?, url: String?) {
                                     super.onPageFinished(view, url)
-                                    swipeRefreshLayout.isRefreshing = false
 
                                     view?.let {
                                         injectCSS(it)
@@ -209,11 +205,6 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
                                         view?.evaluateJavascript(isJS(), null)
                                     }
                                 }
-
-                                override fun onReceivedError(view: WebView?, request: android.webkit.WebResourceRequest?, error: android.webkit.WebResourceError?) {
-                                    super.onReceivedError(view, request, error)
-                                    swipeRefreshLayout.isRefreshing = false
-                                }
                             }
 
                             webChromeClient = WebChromeClientWithCallback { mimeTypes ->
@@ -222,18 +213,7 @@ fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() ->
 
                             loadUrl(url)
                         }
-
-                        webViewRef = webView
-
-                        swipeRefreshLayout.setOnRefreshListener {
-                            webView.reload()
-                            swipeRefreshLayout.isRefreshing = true
-                        }
-
-                        swipeRefreshLayout.isEnabled = !(context.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE && (type == ServiceType.Radarr || type == ServiceType.Sonarr))
-
-                        swipeRefreshLayout.addView(webView)
-                        swipeRefreshLayout
+                        webView
                     }
                 )
             }
