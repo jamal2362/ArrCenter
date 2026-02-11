@@ -144,7 +144,7 @@ fun injectCSS(webView: WebView) {
                 }
                 
                 .container-full-width .container {
-                  width: 100%;
+                  width: 98%;
                 }
                 
                 [class*="wallpaper-wrapper"] {
