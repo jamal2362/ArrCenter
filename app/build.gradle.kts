@@ -1,10 +1,11 @@
+import com.android.build.api.dsl.ApplicationExtension
+
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android") version "2.3.10"
     id("org.jetbrains.kotlin.plugin.compose") version "2.3.10"
 }
 
-android {
+configure<ApplicationExtension> {
     namespace = "com.jamal2367.arrcenter"
     compileSdk = 36
 
@@ -55,10 +56,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
-    }
-	
-    kotlin {
-        jvmToolchain(21)
     }
 	
     buildFeatures {
