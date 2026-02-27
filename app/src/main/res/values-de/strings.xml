@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="jellyseerr">Jellyseerr</string>
+    <string name="seerr">Seerr</string>
     <string name="radarr">Radarr</string>
     <string name="sonarr">Sonarr</string>
     <string name="settings">Einstellungen</string>

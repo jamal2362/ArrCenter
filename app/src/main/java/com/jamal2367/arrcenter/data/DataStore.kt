@@ -8,8 +8,8 @@ import androidx.datastore.preferences.preferencesDataStore
 val Context.dataStore by preferencesDataStore("settings")
 
 object SettingsKeys {
-    val JELLY_PRIMARY: Preferences.Key<String> = stringPreferencesKey("jelly_primary")
-    val JELLY_SECONDARY: Preferences.Key<String> = stringPreferencesKey("jelly_secondary")
+    val SEERR_PRIMARY: Preferences.Key<String> = stringPreferencesKey("seerr_primary")
+    val SEERR_SECONDARY: Preferences.Key<String> = stringPreferencesKey("seerr_secondary")
     val RADARR_PRIMARY: Preferences.Key<String> = stringPreferencesKey("radarr_primary")
     val RADARR_SECONDARY: Preferences.Key<String> = stringPreferencesKey("radarr_secondary")
     val SONARR_PRIMARY: Preferences.Key<String> = stringPreferencesKey("sonarr_primary")

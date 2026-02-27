@@ -32,7 +32,7 @@ import java.net.URL
 @Composable
 fun SheetItem(backgroundColor: Color, onClick: (String) -> Unit) {
     val items = listOf(
-        Triple("jellyseerr", R.drawable.ic_jellyseerr_24dp, R.string.jellyseerr),
+        Triple("seerr", R.drawable.ic_seerr_24dp, R.string.seerr),
         Triple("radarr", R.drawable.ic_radarr_24dp, R.string.radarr),
         Triple("sonarr", R.drawable.ic_sonarr_24dp, R.string.sonarr),
         Triple("sabnzbd", R.drawable.ic_sabnzbd_24dp, R.string.sabnzbd),

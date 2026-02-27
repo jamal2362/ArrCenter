@@ -25,8 +25,8 @@ fun SettingsScreen(onSaved: () -> Unit = {}) {
     val prefsFlow = context.dataStore.data.collectAsState(initial = emptyPreferences())
     val scrollState = rememberScrollState()
 
-    var jellyPrimary by remember { mutableStateOf("") }
-    var jellySecondary by remember { mutableStateOf("") }
+    var seerrPrimary by remember { mutableStateOf("") }
+    var seerrSecondary by remember { mutableStateOf("") }
     var radarrPrimary by remember { mutableStateOf("") }
     var radarrSecondary by remember { mutableStateOf("") }
     var sonarrPrimary by remember { mutableStateOf("") }
@@ -37,8 +37,8 @@ fun SettingsScreen(onSaved: () -> Unit = {}) {
     var uvsSecondary by remember { mutableStateOf("") }
 
     LaunchedEffect(prefsFlow.value) {
-        jellyPrimary = prefsFlow.value[SettingsKeys.JELLY_PRIMARY] ?: ""
-        jellySecondary = prefsFlow.value[SettingsKeys.JELLY_SECONDARY] ?: ""
+        seerrPrimary = prefsFlow.value[SettingsKeys.SEERR_PRIMARY] ?: ""
+        seerrSecondary = prefsFlow.value[SettingsKeys.SEERR_SECONDARY] ?: ""
         radarrPrimary = prefsFlow.value[SettingsKeys.RADARR_PRIMARY] ?: ""
         radarrSecondary = prefsFlow.value[SettingsKeys.RADARR_SECONDARY] ?: ""
         sonarrPrimary = prefsFlow.value[SettingsKeys.SONARR_PRIMARY] ?: ""
@@ -72,11 +72,11 @@ fun SettingsScreen(onSaved: () -> Unit = {}) {
             )
 
             SettingsSection(
-                title = stringResource(R.string.jellyseerr),
-                primaryValue = jellyPrimary,
-                onPrimaryChange = { jellyPrimary = it },
-                secondaryValue = jellySecondary,
-                onSecondaryChange = { jellySecondary = it }
+                title = stringResource(R.string.seerr),
+                primaryValue = seerrPrimary,
+                onPrimaryChange = { seerrPrimary = it },
+                secondaryValue = seerrSecondary,
+                onSecondaryChange = { seerrSecondary = it }
             )
 
             SettingsSection(
@@ -115,8 +115,8 @@ fun SettingsScreen(onSaved: () -> Unit = {}) {
                 onClick = {
                     scope.launch {
                         context.dataStore.edit { e ->
-                            e[SettingsKeys.JELLY_PRIMARY] = jellyPrimary
-                            e[SettingsKeys.JELLY_SECONDARY] = jellySecondary
+                            e[SettingsKeys.SEERR_PRIMARY] = seerrPrimary
+                            e[SettingsKeys.SEERR_SECONDARY] = seerrSecondary
                             e[SettingsKeys.RADARR_PRIMARY] = radarrPrimary
                             e[SettingsKeys.RADARR_SECONDARY] = radarrSecondary
                             e[SettingsKeys.SONARR_PRIMARY] = sonarrPrimary

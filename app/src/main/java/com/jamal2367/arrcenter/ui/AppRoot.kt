@@ -32,7 +32,7 @@ fun AppRoot(
     val sheetState = rememberModalBottomSheetState()
 
     val backgroundColor = when (currentRoute) {
-        "jellyseerr" -> Color(0xFF111827)
+        "seerr" -> Color(0xFF111827)
         "radarr" -> Color(0xFF202020)
         "sonarr" -> Color(0xFF202020)
         "sabnzbd" -> Color(0xFF000000)
@@ -50,10 +50,10 @@ fun AppRoot(
 
         NavHost(
             navController = navController,
-            startDestination = "jellyseerr",
+            startDestination = "seerr",
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable("jellyseerr") { ServiceScreen(ServiceType.Jellyseerr, backgroundColor = backgroundColor, onShowSheet = { showSheet = true }) }
+            composable("seerr") { ServiceScreen(ServiceType.Seerr, backgroundColor = backgroundColor, onShowSheet = { showSheet = true }) }
             composable("radarr") { ServiceScreen(ServiceType.Radarr, backgroundColor = backgroundColor, onShowSheet = { showSheet = true }) }
             composable("sonarr") { ServiceScreen(ServiceType.Sonarr, backgroundColor = backgroundColor, onShowSheet = { showSheet = true }) }
             composable("sabnzbd") { ServiceScreen(ServiceType.SABnzbd, backgroundColor = backgroundColor, onShowSheet = { showSheet = true }) }
