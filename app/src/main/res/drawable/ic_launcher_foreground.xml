@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    Adaptive icon foreground: a play button in the centre with four connected services
-    around it - the app is a hub for several self-hosted services.
+    Adaptive icon foreground: a radar sweep with a contact - Radarr and Sonarr are named
+    after radar and sonar, so the motif points at the service family the app collects.
 
     All artwork stays within a radius of 33 around the centre (54,54). The adaptive icon
     safe zone is the inner 72dp circle of the 108dp canvas, so nothing is clipped by a
     round, squircle or squared launcher mask.
 
-    Pure white fill and no android:tint, so the same drawable also serves as the monochrome
+    Pure white and no android:tint, so the same drawable also serves as the monochrome
     layer, where the system applies its own tint.
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
@@ -16,31 +16,31 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Hub: ring with the play triangle knocked out via even-odd. -->
+    <!-- Outer range ring. -->
     <path
-        android:fillColor="#FFFFFF"
-        android:fillType="evenOdd"
-        android:pathData="M40,54a14,14 0 1,0 28,0a14,14 0 1,0 -28,0zM49.5,46.5L49.5,61.5L62,54z" />
-
-    <!-- Connectors between the hub and the four services. -->
-    <path
+        android:fillColor="#00000000"
         android:strokeColor="#FFFFFF"
-        android:strokeWidth="4"
-        android:strokeLineCap="round"
-        android:pathData="M54,41L54,33M67,54L75,54M54,67L54,75M41,54L33,54" />
+        android:strokeWidth="3.5"
+        android:pathData="M24,54a30,30 0 1,0 60,0a30,30 0 1,0 -60,0z" />
 
-    <!-- The four services. -->
+    <!-- Inner range ring. -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3.5"
+        android:pathData="M37,54a17,17 0 1,0 34,0a17,17 0 1,0 -34,0z" />
+
+    <!-- Sweep line. -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="4.5"
+        android:strokeLineCap="round"
+        android:pathData="M54,54L75,33" />
+
+    <!-- Contact. -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M48,27a6,6 0 1,0 12,0a6,6 0 1,0 -12,0z" />
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M75,54a6,6 0 1,0 12,0a6,6 0 1,0 -12,0z" />
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M48,81a6,6 0 1,0 12,0a6,6 0 1,0 -12,0z" />
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M21,54a6,6 0 1,0 12,0a6,6 0 1,0 -12,0z" />
+        android:pathData="M35.5,68a4.5,4.5 0 1,0 9,0a4.5,4.5 0 1,0 -9,0z" />
 
 </vector>
