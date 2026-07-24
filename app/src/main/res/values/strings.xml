@@ -50,6 +50,15 @@
     <string name="start_service">Start screen</string>
     <string name="start_service_description">The service that opens when the app starts.</string>
 
+    <string name="backup">Backup</string>
+    <string name="backup_description">Save your service addresses to a file, or restore them from one. Logins are not included.</string>
+    <string name="export_settings">Export</string>
+    <string name="import_settings">Import</string>
+    <string name="export_success">Settings exported</string>
+    <string name="export_failed">Export failed</string>
+    <string name="import_success">Settings imported</string>
+    <string name="import_failed">File could not be read</string>
+
     <!-- Downloads / external apps -->
     <string name="download_started">Download started</string>
     <string name="download_failed">Download could not be started</string>

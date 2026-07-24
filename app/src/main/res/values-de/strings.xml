@@ -50,6 +50,15 @@
     <string name="start_service">Startbildschirm</string>
     <string name="start_service_description">Der Dienst, der beim Start der App geöffnet wird.</string>
 
+    <string name="backup">Sicherung</string>
+    <string name="backup_description">Speichere deine Dienst-Adressen in einer Datei oder stelle sie daraus wieder her. Logins sind nicht enthalten.</string>
+    <string name="export_settings">Exportieren</string>
+    <string name="import_settings">Importieren</string>
+    <string name="export_success">Einstellungen exportiert</string>
+    <string name="export_failed">Export fehlgeschlagen</string>
+    <string name="import_success">Einstellungen importiert</string>
+    <string name="import_failed">Datei konnte nicht gelesen werden</string>
+
     <!-- Downloads / externe Apps -->
     <string name="download_started">Download gestartet</string>
     <string name="download_failed">Download konnte nicht gestartet werden</string>

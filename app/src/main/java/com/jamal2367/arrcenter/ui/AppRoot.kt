@@ -4,9 +4,11 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -263,6 +265,30 @@ private fun AppContent(
                     onTest = viewModel::testConnection,
                     onThemeModeChange = viewModel::setThemeMode,
                     onStartServiceChange = viewModel::setStartService,
+                    // Toast rather than snackbar: the settings sheet covers the Scaffold's
+                    // snackbar host, so the message would be invisible behind it.
+                    onExport = { uri ->
+                        viewModel.exportSettings(uri) { ok ->
+                            toast(
+                                context,
+                                if (ok) R.string.export_success else R.string.export_failed,
+                            )
+                        }
+                    },
+                    onImport = { uri ->
+                        viewModel.importSettings(uri) { ok ->
+                            if (ok) {
+                                // Same cleanup as after saving: the addresses changed, so the
+                                // WebViews must navigate to the newly resolved URLs.
+                                ServiceType.entries.forEach { host.controllerFor(it).forget() }
+                                showSettings = false
+                            }
+                            toast(
+                                context,
+                                if (ok) R.string.import_success else R.string.import_failed,
+                            )
+                        }
+                    },
                     onClose = {
                         viewModel.clearConnectionTests()
                         showSettings = false
@@ -275,6 +301,10 @@ private fun AppContent(
 
 /** How long the navigation stays on screen after it was requested. */
 private const val BAR_VISIBLE_MS = 3_000L
+
+private fun toast(context: Context, @StringRes message: Int) {
+    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+}
 
 /**
  * Opens this app's page in the system settings.

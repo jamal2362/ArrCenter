@@ -1,18 +1,22 @@
 package com.jamal2367.arrcenter.ui
 
 import android.app.Application
+import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.jamal2367.arrcenter.data.AppSettings
 import com.jamal2367.arrcenter.data.ServiceEndpoints
 import com.jamal2367.arrcenter.data.SettingsRepository
 import com.jamal2367.arrcenter.data.ThemeMode
+import com.jamal2367.arrcenter.data.parseBackupJson
+import com.jamal2367.arrcenter.data.toBackupJson
 import com.jamal2367.arrcenter.model.ServiceType
 import com.jamal2367.arrcenter.net.EndpointResult
 import com.jamal2367.arrcenter.net.ProbeResult
 import com.jamal2367.arrcenter.net.normalizeUrl
 import com.jamal2367.arrcenter.net.probeEndpoint
 import com.jamal2367.arrcenter.net.resolveEndpoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -21,6 +25,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /** What the service screen should currently show. */
 sealed interface ServiceState {
@@ -44,6 +49,7 @@ sealed interface ConnectionTest {
 class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = SettingsRepository(application)
+    private val resolver = application.contentResolver
 
     val settings: StateFlow<AppSettings?> = repository.settings
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
@@ -129,6 +135,44 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             repository.saveEndpoints(endpoints)
             onSaved()
+        }
+    }
+
+    /** Writes the current settings to [uri]; [onResult] reports whether it worked. */
+    fun exportSettings(uri: Uri, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val current = settings.value
+            val success = current != null && withContext(Dispatchers.IO) {
+                runCatching {
+                    // "wt" truncates: without it a shorter backup would leave the tail of a
+                    // previous, longer file behind and produce invalid JSON.
+                    resolver.openOutputStream(uri, "wt")?.use { stream ->
+                        stream.write(current.toBackupJson().toByteArray())
+                    } ?: error("no output stream for $uri")
+                }.isSuccess
+            }
+            onResult(success)
+        }
+    }
+
+    /** Replaces the settings with the contents of [uri]. */
+    fun importSettings(uri: Uri, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val imported = withContext(Dispatchers.IO) {
+                runCatching {
+                    resolver.openInputStream(uri)?.use { it.readBytes().decodeToString() }
+                }.getOrNull()?.let(::parseBackupJson)
+            }
+
+            if (imported == null) {
+                onResult(false)
+                return@launch
+            }
+
+            repository.saveEndpoints(imported.endpoints)
+            repository.saveThemeMode(imported.themeMode)
+            repository.saveStartService(imported.startService)
+            onResult(true)
         }
     }
 

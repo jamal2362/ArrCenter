@@ -1,5 +1,8 @@
 package com.jamal2367.arrcenter.ui.screens
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,6 +34,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -57,6 +61,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.dp
 import com.jamal2367.arrcenter.R
 import com.jamal2367.arrcenter.data.AppSettings
+import com.jamal2367.arrcenter.data.BACKUP_FILE_NAME
 import com.jamal2367.arrcenter.data.ServiceEndpoints
 import com.jamal2367.arrcenter.data.ThemeMode
 import com.jamal2367.arrcenter.model.ServiceType
@@ -78,9 +83,19 @@ fun SettingsScreen(
     onTest: (ServiceType, ServiceEndpoints) -> Unit,
     onThemeModeChange: (ThemeMode) -> Unit,
     onStartServiceChange: (ServiceType) -> Unit,
+    onExport: (Uri) -> Unit,
+    onImport: (Uri) -> Unit,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val exportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json"),
+    ) { uri: Uri? -> uri?.let(onExport) }
+
+    val importLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument(),
+    ) { uri: Uri? -> uri?.let(onImport) }
+
     // Local draft of the text fields. Seeded once per settings revision so a background
     // DataStore emission cannot overwrite what the user is currently typing.
     val drafts = remember { mutableStateMapOf<ServiceType, ServiceEndpoints>() }
@@ -135,6 +150,15 @@ fun SettingsScreen(
                         test = connectionTests[type],
                         onChange = { drafts[type] = it },
                         onTest = { onTest(type, drafts[type] ?: ServiceEndpoints()) },
+                    )
+                }
+
+                item {
+                    BackupCard(
+                        onExport = { exportLauncher.launch(BACKUP_FILE_NAME) },
+                        // Not filtered by MIME type: content providers routinely report .json
+                        // as octet-stream, which would hide the user's own backup file.
+                        onImport = { importLauncher.launch(arrayOf("*/*")) },
                     )
                 }
 
@@ -330,6 +354,43 @@ private fun TestBadge(text: String, positive: Boolean, detail: String? = null) {
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+        }
+    }
+}
+
+@Composable
+private fun BackupCard(
+    onExport: () -> Unit,
+    onImport: () -> Unit,
+) {
+    Card(
+        shape = MaterialTheme.shapes.extraLarge,
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+        ),
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+            Text(
+                text = stringResource(R.string.backup),
+                style = MaterialTheme.typography.titleLarge,
+            )
+            Text(
+                text = stringResource(R.string.backup_description),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            Spacer(Modifier.height(16.dp))
+
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedButton(onClick = onExport, modifier = Modifier.weight(1f)) {
+                    Text(stringResource(R.string.export_settings))
+                }
+                OutlinedButton(onClick = onImport, modifier = Modifier.weight(1f)) {
+                    Text(stringResource(R.string.import_settings))
+                }
+            }
         }
     }
 }
