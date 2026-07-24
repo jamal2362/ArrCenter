@@ -14,8 +14,8 @@ configure<ApplicationExtension> {
         applicationId = "com.jamal2367.arrcenter"
         minSdk = 31
         targetSdk = 37
-        versionCode = 100
-        versionName = "10.0"
+        versionCode = 110
+        versionName = "11.0"
 
         vectorDrawables {
             useSupportLibrary = true
