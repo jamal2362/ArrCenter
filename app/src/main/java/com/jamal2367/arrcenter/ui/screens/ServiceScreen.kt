@@ -1,283 +1,225 @@
 package com.jamal2367.arrcenter.ui.screens
 
-import android.annotation.SuppressLint
-import android.content.Intent
-import android.net.Uri
 import android.view.ViewGroup
-import android.webkit.CookieManager
-import android.webkit.WebView
-import android.webkit.WebViewClient
-import androidx.activity.ComponentActivity
-import androidx.activity.OnBackPressedCallback
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.animation.*
-import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Warning
-import androidx.compose.material3.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.*
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import com.jamal2367.arrcenter.R
-import com.jamal2367.arrcenter.data.SettingsKeys
-import com.jamal2367.arrcenter.data.dataStore
-import com.jamal2367.arrcenter.helper.*
 import com.jamal2367.arrcenter.model.ServiceType
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import androidx.core.net.toUri
+import com.jamal2367.arrcenter.ui.ServiceState
+import com.jamal2367.arrcenter.ui.components.StatusAction
+import com.jamal2367.arrcenter.ui.components.StatusView
+import com.jamal2367.arrcenter.web.ServiceWebController
+import com.jamal2367.arrcenter.web.WebViewHost
+import com.jamal2367.arrcenter.web.createServiceWebView
 
-@OptIn(ExperimentalMaterial3Api::class)
-@SuppressLint("SetJavaScriptEnabled")
+/**
+ * Shows one service: either the loaded web app, or why it cannot be shown.
+ *
+ * The screen no longer owns any networking - it renders the [ServiceState] produced by the
+ * view model, which means a service keeps its resolved address across configuration changes
+ * instead of probing the network again on every recomposition.
+ */
 @Composable
-fun ServiceScreen(type: ServiceType, backgroundColor: Color, onShowSheet: (() -> Unit)? = null) {
-    val context = LocalContext.current
-    val activity = context as ComponentActivity
-    val coroutineScope = rememberCoroutineScope()
+fun ServiceScreen(
+    type: ServiceType,
+    state: ServiceState,
+    host: WebViewHost,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier,
+    permissionMissing: Boolean = false,
+    onGrantPermission: () -> Unit = {},
+) {
+    val label = stringResource(type.labelRes)
+    val onChrome = Color.White.copy(alpha = 0.92f)
 
-    var currentUrl by remember { mutableStateOf<String?>(null) }
-    var isLoading by remember { mutableStateOf(true) }
-    var isError by remember { mutableStateOf(false) }
-    var webView by remember { mutableStateOf<WebView?>(null) }
-    var buttonVisible by remember { mutableStateOf(false) }
-    var buttonTrigger by remember { mutableStateOf(false) }
-
-    LaunchedEffect(buttonTrigger) {
-        if (buttonVisible) {
-            delay(2000L)
-            buttonVisible = false
-        }
-    }
-
-    val fileChooserLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocument(),
-        onResult = { uri: Uri? ->
-            val callback = (webView?.webChromeClient as? WebChromeClientWithCallback)?.filePathCallback
-            callback?.onReceiveValue(uri?.let { arrayOf(it) } ?: emptyArray())
-            (webView?.webChromeClient as? WebChromeClientWithCallback)?.filePathCallback = null
-        }
-    )
-
-    suspend fun loadUrl() {
-        isLoading = true
-        isError = false
-        currentUrl = null
-
-        val prefs = context.dataStore.data.first()
-
-        val (primary, secondary) = when (type) {
-            ServiceType.Seerr -> prefs[SettingsKeys.SEERR_PRIMARY] to prefs[SettingsKeys.SEERR_SECONDARY]
-            ServiceType.Radarr -> prefs[SettingsKeys.RADARR_PRIMARY] to prefs[SettingsKeys.RADARR_SECONDARY]
-            ServiceType.Sonarr -> prefs[SettingsKeys.SONARR_PRIMARY] to prefs[SettingsKeys.SONARR_SECONDARY]
-            ServiceType.SABnzbd -> prefs[SettingsKeys.SABNZBD_PRIMARY] to prefs[SettingsKeys.SABNZBD_SECONDARY]
-            ServiceType.Uvs -> prefs[SettingsKeys.UVS_PRIMARY] to prefs[SettingsKeys.UVS_SECONDARY]
-        }
-
-        val candidate = withContext(Dispatchers.IO) {
-            when {
-                isReachable(primary) -> primary
-                isReachable(secondary) -> secondary
-                else -> null
-            }
-        }
-
-        currentUrl = candidate
-        isLoading = false
-        isError = candidate == null
-    }
-
-    LaunchedEffect(type) {
-        loadUrl()
-    }
-
-    DisposableEffect(activity) {
-        val callback = object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                if (webView?.canGoBack() == true) {
-                    webView?.goBack()
-                } else {
-                    onShowSheet?.invoke()
-                }
-            }
-        }
-        activity.onBackPressedDispatcher.addCallback(callback)
-        onDispose { callback.remove() }
-    }
-
-    Scaffold(
-        bottomBar = {
-            AnimatedVisibility(
-                visible = buttonVisible && !isLoading && !isError && currentUrl != null,
-                enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
-                exit = fadeOut() + slideOutVertically(targetOffsetY = { it })
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(42.dp),
-                    contentAlignment = Alignment.BottomCenter
-                ) {
-                    Surface(
-                        onClick = { webView?.reload() },
-                        color = backgroundColor,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Refresh,
-                            contentDescription = null,
-                            tint = White.darken(0.1f),
-                            modifier = Modifier.padding(9.dp)
-                        )
-                    }
-                }
-
-            }
-        },
-    ) { innerPadding ->
-        when {
-            isLoading -> Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(backgroundColor)
-                    .padding(innerPadding),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-            isError -> Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(backgroundColor)
-                    .padding(24.dp)
-                    .verticalScroll(rememberScrollState()),
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(type.chromeColor),
+    ) {
+        when (state) {
+            ServiceState.Idle, ServiceState.Resolving -> Column(
+                modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Icon(
-                    imageVector = Icons.Rounded.Warning,
-                    contentDescription = null,
-                    tint = White.darken(0.1f),
-                    modifier = Modifier.size(80.dp)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
+                CircularProgressIndicator(color = onChrome)
+                Spacer(Modifier.height(20.dp))
                 Text(
-                    text = stringResource(R.string.no_connection),
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = White.darken(0.1f),
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    textAlign = TextAlign.Center
+                    text = stringResource(R.string.connecting, label),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = onChrome.copy(alpha = 0.75f),
                 )
-                Spacer(modifier = Modifier.height(36.dp))
-                Button(
-                    onClick = { coroutineScope.launch {
-                        loadUrl()
-                    } },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary
-                    )
-                ) {
-                    Text(text = stringResource(R.string.retry))
-                }
             }
-            else -> currentUrl?.let { url ->
-                AndroidView(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(backgroundColor)
-                        .padding(bottom = animateDpAsState(
-                            targetValue = if (buttonVisible && !isLoading && !isError && currentUrl != null)
-                                innerPadding.calculateBottomPadding()
-                            else 0.dp,
-                            label = "bottomPadding"
-                        ).value),
-                    factory = { ctx ->
-                        val cookieManager = CookieManager.getInstance()
 
-                        WebView(ctx).apply {
-                            layoutParams = ViewGroup.LayoutParams(
-                                ViewGroup.LayoutParams.MATCH_PARENT,
-                                ViewGroup.LayoutParams.MATCH_PARENT
-                            )
-                            settings.javaScriptEnabled = true
-                            settings.domStorageEnabled = true
-                            settings.builtInZoomControls = true
-                            settings.displayZoomControls = false
-                            settings.allowFileAccess = true
-                            settings.allowContentAccess = true
-                            settings.setSupportZoom(true)
+            // No action button here: the settings are one tap away in the bottom bar, which
+            // is visible on this screen anyway.
+            ServiceState.NotConfigured -> StatusView(
+                icon = Icons.Rounded.Settings,
+                title = stringResource(R.string.not_configured, label),
+                message = stringResource(R.string.not_configured_hint),
+                contentColor = onChrome,
+            )
 
-                            cookieManager.setAcceptCookie(true)
-                            cookieManager.setAcceptThirdPartyCookies(this, true)
+            // A missing local network permission blocks every request, so naming it beats
+            // showing a generic "no connection".
+            is ServiceState.Unreachable -> if (permissionMissing) {
+                StatusView(
+                    icon = Icons.Rounded.Warning,
+                    title = stringResource(R.string.local_network_blocked),
+                    message = stringResource(R.string.local_network_blocked_hint),
+                    contentColor = onChrome,
+                    primaryAction = StatusAction(
+                        label = stringResource(R.string.grant_permission),
+                        onClick = onGrantPermission,
+                    ),
+                    secondaryAction = StatusAction(
+                        label = stringResource(R.string.retry),
+                        onClick = onRetry,
+                    ),
+                )
+            } else {
+                StatusView(
+                    icon = Icons.Rounded.Warning,
+                    title = stringResource(R.string.no_connection),
+                    message = stringResource(R.string.no_connection_hint, label),
+                    // The concrete network error - without it every cause looks identical.
+                    detail = state.reason,
+                    contentColor = onChrome,
+                    primaryAction = StatusAction(
+                        label = stringResource(R.string.retry),
+                        onClick = onRetry,
+                    ),
+                )
+            }
 
-                            if (type == ServiceType.SABnzbd) {
-                                settings.useWideViewPort = true
-                                settings.loadWithOverviewMode = true
-                                settings.userAgentString = isDesktopMode()
-                            }
+            is ServiceState.Ready -> ServiceWebContent(
+                type = type,
+                url = state.url,
+                host = host,
+                onRetry = onRetry,
+                contentColor = onChrome,
+            )
+        }
+    }
+}
 
-                            setOnTouchListener { v, event ->
-                                when (event.action) {
-                                    android.view.MotionEvent.ACTION_DOWN -> {
-                                        buttonVisible = true
-                                        buttonTrigger = !buttonTrigger
-                                    }
-                                    android.view.MotionEvent.ACTION_UP -> {
-                                        v.performClick()
-                                    }
-                                }
-                                false
-                            }
+@Composable
+private fun ServiceWebContent(
+    type: ServiceType,
+    url: String,
+    host: WebViewHost,
+    onRetry: () -> Unit,
+    contentColor: Color,
+) {
+    val context = LocalContext.current
+    val controller: ServiceWebController = host.controllerFor(type)
 
-                            webViewClient = object : WebViewClient() {
-                                override fun shouldOverrideUrlLoading(view: WebView?, request: android.webkit.WebResourceRequest): Boolean {
-                                    val clickedUrl = request.url.toString()
+    // Stop timers and media while the app is in the background instead of letting the page
+    // keep running - the previous version never paused its WebView.
+    LifecycleEventEffect(Lifecycle.Event.ON_PAUSE) {
+        controller.webView?.onPause()
+        controller.webView?.pauseTimers()
+    }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        controller.webView?.onResume()
+        controller.webView?.resumeTimers()
+    }
 
-                                    if (clickedUrl.contains("youtube.com") || clickedUrl.contains("youtu.be")) {
-                                        val intent = Intent(Intent.ACTION_VIEW, clickedUrl.toUri())
-                                        intent.setPackage("com.google.android.youtube")
-                                        if (intent.resolveActivity(ctx.packageManager) == null) intent.setPackage(null)
-                                        ctx.startActivity(intent)
-                                        return true
-                                    }
-                                    return false
-                                }
+    Box(Modifier.fillMaxSize()) {
+        // Each service needs its own node. AndroidView calls factory() once per node, so
+        // without this key Compose reuses the node when switching between two services that
+        // are both already resolved - factory() never runs again and the previously
+        // attached WebView stays on screen until the app is restarted.
+        key(type) {
+            AndroidView(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .imePadding(),
+                factory = {
+                    // Reuse the WebView of this service if it was created before, so
+                    // switching keeps scroll position, history and the logged in session.
+                    // Detaching first is required: disposing the previous node leaves the
+                    // WebView parented to a holder that is no longer in the hierarchy.
+                    controller.webView
+                        ?.also { existing -> (existing.parent as? ViewGroup)?.removeView(existing) }
+                        ?: createServiceWebView(context, type, controller, host)
+                },
+                // Deliberately no destroy here: the WebView outlives this composable and is
+                // torn down by WebViewHost when the activity goes away.
+                onRelease = { },
+            )
+        }
 
+        LaunchedEffect(controller, url) {
+            controller.loadIfNeeded(url)
+        }
 
-                                override fun onPageFinished(view: WebView?, url: String?) {
-                                    super.onPageFinished(view, url)
+        AnimatedVisibility(
+            visible = controller.isLoading && controller.progress < 1f,
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier.align(Alignment.TopCenter),
+        ) {
+            val progressLabel = stringResource(R.string.loading_progress)
+            LinearProgressIndicator(
+                progress = { controller.progress.coerceIn(0f, 1f) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .semantics { contentDescription = progressLabel },
+                color = type.brandColor,
+                trackColor = Color.Transparent,
+                drawStopIndicator = { },
+            )
+        }
 
-                                    view?.let {
-                                        injectCSS(it)
-                                        injectJS(it)
-                                    }
-                                }
-                            }
-
-                            webChromeClient = WebChromeClientWithCallback { mimeTypes ->
-                                fileChooserLauncher.launch(mimeTypes)
-                            }
-
-                            loadUrl(url)
-                        }.also { webView = it }
-                    }
+        controller.loadError?.let { detail ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(type.chromeColor),
+            ) {
+                StatusView(
+                    icon = Icons.Rounded.Warning,
+                    title = stringResource(R.string.load_failed),
+                    detail = detail.takeIf { it.isNotBlank() },
+                    contentColor = contentColor,
+                    primaryAction = StatusAction(
+                        label = stringResource(R.string.retry),
+                        onClick = onRetry,
+                    ),
                 )
             }
         }

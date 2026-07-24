@@ -1,18 +1,19 @@
 import com.android.build.api.dsl.ApplicationExtension
 
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.plugin.compose") version "2.3.10"
+    // Kotlin support is built into AGP 9, so only the Compose compiler plugin is applied.
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.compose)
 }
 
 configure<ApplicationExtension> {
     namespace = "com.jamal2367.arrcenter"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.jamal2367.arrcenter"
         minSdk = 31
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 100
         versionName = "10.0"
 
@@ -46,10 +47,6 @@ configure<ApplicationExtension> {
         debug {
             isMinifyEnabled = false
             isShrinkResources = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
         }
     }
 
@@ -57,26 +54,37 @@ configure<ApplicationExtension> {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-	
+
     buildFeatures {
         compose = true
     }
-	
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
 }
 
 dependencies {
-    val composeBom = platform("androidx.compose:compose-bom:2025.08.00")
+    val composeBom = platform(libs.compose.bom)
 
     implementation(composeBom)
-    implementation("androidx.compose.material3:material3:1.4.0")
-    implementation("androidx.compose.material:material-icons-core:1.7.8")
-    implementation("androidx.core:core-ktx:1.17.0")
-    implementation("androidx.datastore:datastore-preferences:1.2.0")
-    implementation("androidx.navigation:navigation-compose:2.9.7")
-    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.2.0")
+    implementation(libs.compose.material3)
+    implementation(libs.compose.material.icons.core)
+    implementation(libs.compose.ui.tooling.preview)
+    debugImplementation(libs.compose.ui.tooling)
+
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.webkit)
+
+    implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
 }

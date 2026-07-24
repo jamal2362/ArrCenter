@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<network-security-config>
-    <base-config cleartextTrafficPermitted="true" />
+<network-security-config xmlns:tools="http://schemas.android.com/tools">
+
+    <!--
+        Cleartext HTTP is intentionally allowed: the services this app talks to are
+        self-hosted on the local network and are typically reached over plain http on a
+        LAN address. HTTPS connections still use the system trust store only.
+    -->
+    <base-config cleartextTrafficPermitted="true" tools:ignore="InsecureBaseConfiguration" />
+
 </network-security-config>

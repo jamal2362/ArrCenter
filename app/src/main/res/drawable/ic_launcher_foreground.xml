@@ -1,15 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Adaptive icon foreground: a play button in the centre with four connected services
+    around it - the app is a hub for several self-hosted services.
+
+    All artwork stays within a radius of 33 around the centre (54,54). The adaptive icon
+    safe zone is the inner 72dp circle of the 108dp canvas, so nothing is clipped by a
+    round, squircle or squared launcher mask.
+
+    Pure white fill and no android:tint, so the same drawable also serves as the monochrome
+    layer, where the system applies its own tint.
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
-    android:viewportWidth="24"
-    android:viewportHeight="24"
-    android:tint="#FFFFFF">
-  <group android:scaleX="0.5568"
-      android:scaleY="0.5568"
-      android:translateX="5.3184"
-      android:translateY="5.3184">
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Hub: ring with the play triangle knocked out via even-odd. -->
     <path
-        android:fillColor="@android:color/white"
-        android:pathData="M13,13L13,13c-0.56,0.56 -1.45,0.56 -2,0.01L11,13c-0.55,-0.55 -0.55,-1.44 0,-1.99L11,11c0.55,-0.55 1.44,-0.55 1.99,0L13,11C13.55,11.55 13.55,12.45 13,13zM12,6l2.12,2.12l2.5,-2.5l-3.2,-3.2c-0.78,-0.78 -2.05,-0.78 -2.83,0l-3.2,3.2l2.5,2.5L12,6zM6,12l2.12,-2.12l-2.5,-2.5l-3.2,3.2c-0.78,0.78 -0.78,2.05 0,2.83l3.2,3.2l2.5,-2.5L6,12zM18,12l-2.12,2.12l2.5,2.5l3.2,-3.2c0.78,-0.78 0.78,-2.05 0,-2.83l-3.2,-3.2l-2.5,2.5L18,12zM12,18l-2.12,-2.12l-2.5,2.5l3.2,3.2c0.78,0.78 2.05,0.78 2.83,0l3.2,-3.2l-2.5,-2.5L12,18z"/>
-  </group>
+        android:fillColor="#FFFFFF"
+        android:fillType="evenOdd"
+        android:pathData="M40,54a14,14 0 1,0 28,0a14,14 0 1,0 -28,0zM49.5,46.5L49.5,61.5L62,54z" />
+
+    <!-- Connectors between the hub and the four services. -->
+    <path
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="4"
+        android:strokeLineCap="round"
+        android:pathData="M54,41L54,33M67,54L75,54M54,67L54,75M41,54L33,54" />
+
+    <!-- The four services. -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M48,27a6,6 0 1,0 12,0a6,6 0 1,0 -12,0z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M75,54a6,6 0 1,0 12,0a6,6 0 1,0 -12,0z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M48,81a6,6 0 1,0 12,0a6,6 0 1,0 -12,0z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M21,54a6,6 0 1,0 12,0a6,6 0 1,0 -12,0z" />
+
 </vector>
