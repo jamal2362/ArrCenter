@@ -1,11 +1,8 @@
 package com.jamal2367.arrcenter.ui
 
-import android.app.Activity
 import android.content.Context
-import android.content.ContextWrapper
 import android.content.Intent
 import android.net.Uri
-import android.os.SystemClock
 import android.provider.Settings
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -14,13 +11,14 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -28,7 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -53,6 +51,7 @@ import com.jamal2367.arrcenter.ui.theme.AppTheme
 import com.jamal2367.arrcenter.ui.theme.SystemBarIcons
 import com.jamal2367.arrcenter.ui.theme.isDark
 import com.jamal2367.arrcenter.web.WebViewHost
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
@@ -163,7 +162,23 @@ private fun AppContent(
         viewModel.resolve(currentService, currentEndpoints, force = true)
     }
 
+    // The navigation is a transient overlay: it shows itself on start, on every back press
+    // and on every interaction, then gets out of the way again.
+    var barVisible by remember { mutableStateOf(false) }
+    var barRequests by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(barRequests) {
+        barVisible = true
+        delay(BAR_VISIBLE_MS)
+        barVisible = false
+    }
+
+    // Incrementing a counter rather than setting a flag: it restarts the effect above even
+    // when the bar is already visible, so the countdown starts over on every request.
+    val showBar: () -> Unit = { barRequests++ }
+
     val selectService: (ServiceType) -> Unit = { type ->
+        showBar()
         if (type != currentService) {
             // Dropping the remembered URL makes the target service load its page again
             // instead of showing whatever was left on screen from the last visit. The
@@ -180,34 +195,11 @@ private fun AppContent(
         }
     }
 
-    val exitMessage = stringResource(R.string.snackbar_exit)
-    var exitArmedAt by remember { mutableLongStateOf(0L) }
-
-    // Always enabled: the last back press must not reach the system directly, otherwise the
-    // app would close without the confirmation step.
+    // Always enabled, and it never calls through to the system: back must not be able to
+    // close the app. Its only jobs are leaving the settings and bringing the navigation
+    // back for a moment.
     BackHandler {
-        when {
-            showSettings -> showSettings = false
-            controller.goBack() -> Unit
-            currentService != settings.startService -> selectService(settings.startService)
-
-            else -> {
-                // elapsedRealtime, not currentTimeMillis: it cannot jump when the clock is
-                // adjusted, which would either close the app instantly or never.
-                val now = SystemClock.elapsedRealtime()
-                if (now - exitArmedAt <= EXIT_CONFIRM_WINDOW_MS) {
-                    context.findActivity()?.finish()
-                } else {
-                    exitArmedAt = now
-                    scope.launch {
-                        snackbarHostState.showSnackbar(
-                            message = exitMessage,
-                            duration = SnackbarDuration.Short,
-                        )
-                    }
-                }
-            }
-        }
+        if (showSettings) showSettings = false else showBar()
     }
 
     // The service screens are always dark behind the system bars; the settings screen
@@ -222,12 +214,21 @@ private fun AppContent(
                 // removing the top app bar does not leave a mismatched strip.
                 containerColor = currentService.chromeColor,
                 bottomBar = {
-                    ServiceBottomBar(
-                        current = currentService,
-                        onSelect = selectService,
-                        onReload = { controller.reload() },
-                        onOpenSettings = { showSettings = true },
-                    )
+                    AnimatedVisibility(
+                        visible = barVisible,
+                        enter = slideInVertically(initialOffsetY = { it }) + fadeIn(),
+                        exit = slideOutVertically(targetOffsetY = { it }) + fadeOut(),
+                    ) {
+                        ServiceBottomBar(
+                            current = currentService,
+                            onSelect = selectService,
+                            onReload = {
+                                showBar()
+                                controller.reload()
+                            },
+                            onOpenSettings = { showSettings = true },
+                        )
+                    }
                 },
                 snackbarHost = { SnackbarHost(snackbarHostState) },
             ) { inner ->
@@ -272,24 +273,8 @@ private fun AppContent(
     }
 }
 
-/** How long the first back press stays armed before the app asks again. */
-private const val EXIT_CONFIRM_WINDOW_MS = 2_000L
-
-/**
- * Walks up the context chain to the hosting activity.
- *
- * `LocalContext` is not guaranteed to be the activity - it can be a wrapper, for instance
- * once a different configuration is applied to a subtree - so casting it directly would be
- * a crash waiting to happen.
- */
-private fun Context.findActivity(): Activity? {
-    var current: Context? = this
-    while (current is ContextWrapper) {
-        if (current is Activity) return current
-        current = current.baseContext
-    }
-    return null
-}
+/** How long the navigation stays on screen after it was requested. */
+private const val BAR_VISIBLE_MS = 3_000L
 
 /**
  * Opens this app's page in the system settings.

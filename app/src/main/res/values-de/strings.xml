@@ -13,7 +13,6 @@
     <!-- Navigation -->
     <string name="settings">Einstellungen</string>
     <string name="back">Zurück</string>
-    <string name="snackbar_exit">Nochmal zurück zum Beenden</string>
     <string name="reload_short">Neu laden</string>
     <string name="navigation">Dienste</string>
 

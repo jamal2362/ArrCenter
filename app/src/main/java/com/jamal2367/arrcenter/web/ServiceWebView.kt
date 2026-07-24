@@ -122,13 +122,7 @@ fun createServiceWebView(
             super.onPageFinished(view, url)
             controller.isLoading = false
             controller.progress = 1f
-            controller.canGoBack = view?.canGoBack() == true
             if (!documentStartSupported) injectFallback(view, script)
-        }
-
-        override fun doUpdateVisitedHistory(view: WebView?, url: String?, isReload: Boolean) {
-            super.doUpdateVisitedHistory(view, url, isReload)
-            controller.canGoBack = view?.canGoBack() == true
         }
 
         override fun onReceivedError(

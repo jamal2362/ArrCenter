@@ -25,7 +25,6 @@ class ServiceWebController(val type: ServiceType) {
 
     var progress by mutableFloatStateOf(0f)
     var isLoading by mutableStateOf(false)
-    var canGoBack by mutableStateOf(false)
     var loadError by mutableStateOf<String?>(null)
 
     /** The URL currently held by the WebView - used to avoid pointless reloads. */
@@ -58,13 +57,6 @@ class ServiceWebController(val type: ServiceType) {
         val view = webView ?: return
         val url = loadedUrl
         if (url != null && view.url == null) view.loadUrl(url) else view.reload()
-    }
-
-    fun goBack(): Boolean {
-        val view = webView ?: return false
-        if (!view.canGoBack()) return false
-        view.goBack()
-        return true
     }
 
     fun destroy() {
