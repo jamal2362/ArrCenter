@@ -13,6 +13,7 @@
     <!-- Navigation -->
     <string name="settings">Einstellungen</string>
     <string name="back">Zurück</string>
+    <string name="snackbar_exit">Drücke erneut Zurück, um die App zu beenden.</string>
     <string name="reload_short">Neu laden</string>
     <string name="navigation">Dienste</string>
 
