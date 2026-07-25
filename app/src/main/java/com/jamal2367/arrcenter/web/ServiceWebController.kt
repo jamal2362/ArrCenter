@@ -52,6 +52,20 @@ class ServiceWebController(val type: ServiceType) {
         loadError = null
     }
 
+    /**
+     * Goes one step back in the page's own history and reports whether that was possible, so
+     * a caller can fall back to leaving the app when the page is at its first entry.
+     */
+    fun goBack(): Boolean {
+        val view = webView ?: return false
+        if (!view.canGoBack()) return false
+        // The previous entry rendered fine, so an error left over from the page we are
+        // leaving must not stay on top of it.
+        loadError = null
+        view.goBack()
+        return true
+    }
+
     fun reload() {
         loadError = null
         val view = webView ?: return

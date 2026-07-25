@@ -3,9 +3,11 @@ package com.jamal2367.arrcenter.ui
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.SystemClock
 import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
@@ -17,10 +19,15 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -28,7 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -36,7 +43,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -47,6 +56,7 @@ import com.jamal2367.arrcenter.model.ServiceType
 import com.jamal2367.arrcenter.net.ACCESS_LOCAL_NETWORK
 import com.jamal2367.arrcenter.net.needsLocalNetworkPermission
 import com.jamal2367.arrcenter.ui.components.ServiceBottomBar
+import com.jamal2367.arrcenter.ui.components.ServiceBottomBarHeight
 import com.jamal2367.arrcenter.ui.screens.ServiceScreen
 import com.jamal2367.arrcenter.ui.screens.SettingsScreen
 import com.jamal2367.arrcenter.ui.theme.AppTheme
@@ -54,10 +64,11 @@ import com.jamal2367.arrcenter.ui.theme.SystemBarIcons
 import com.jamal2367.arrcenter.ui.theme.isDark
 import com.jamal2367.arrcenter.web.WebViewHost
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @Composable
-fun AppRoot(viewModel: AppViewModel = viewModel()) {
+fun AppRoot(touches: TouchTracker, viewModel: AppViewModel = viewModel()) {
     val settings by viewModel.settings.collectAsStateWithLifecycle()
 
     // Nothing is drawn until the stored theme is known, so the app never flashes the wrong
@@ -69,6 +80,7 @@ fun AppRoot(viewModel: AppViewModel = viewModel()) {
             viewModel = viewModel,
             settings = loaded,
             darkTheme = loaded.themeMode.isDark(),
+            touches = touches,
         )
     }
 }
@@ -78,6 +90,7 @@ private fun AppContent(
     viewModel: AppViewModel,
     settings: AppSettings,
     darkTheme: Boolean,
+    touches: TouchTracker,
 ) {
     val serviceStates by viewModel.serviceStates.collectAsStateWithLifecycle()
     val connectionTests by viewModel.connectionTests.collectAsStateWithLifecycle()
@@ -164,20 +177,23 @@ private fun AppContent(
         viewModel.resolve(currentService, currentEndpoints, force = true)
     }
 
-    // The navigation is a transient overlay: it shows itself on start, on every back press
-    // and on every interaction, then gets out of the way again.
+    // The navigation is a transient overlay: any touch anywhere in the app brings it back,
+    // and it gets out of the way again once the user has been idle for a moment.
     var barVisible by remember { mutableStateOf(false) }
-    var barRequests by remember { mutableIntStateOf(0) }
 
-    LaunchedEffect(barRequests) {
-        barVisible = true
-        delay(BAR_VISIBLE_MS)
-        barVisible = false
+    LaunchedEffect(touches) {
+        // collectLatest cancels the pending countdown whenever a new touch arrives, so the
+        // bar only disappears after BAR_IDLE_MS without any input at all.
+        touches.events.collectLatest {
+            barVisible = true
+            delay(BAR_IDLE_MS)
+            barVisible = false
+        }
     }
 
-    // Incrementing a counter rather than setting a flag: it restarts the effect above even
-    // when the bar is already visible, so the countdown starts over on every request.
-    val showBar: () -> Unit = { barRequests++ }
+    // For interactions that produce no touch event of their own - a hardware keyboard, a
+    // remote - so the bar does not vanish while the user is working with it.
+    val showBar: () -> Unit = { touches.onTouch() }
 
     val selectService: (ServiceType) -> Unit = { type ->
         showBar()
@@ -197,16 +213,60 @@ private fun AppContent(
         }
     }
 
-    // Always enabled, and it never calls through to the system: back must not be able to
-    // close the app. Its only jobs are leaving the settings and bringing the navigation
-    // back for a moment.
+    // Back is a navigation key again: it leaves the settings, then walks the history of the
+    // page that is on screen, and only when there is nothing left to go back to may it end
+    // the app - and then not on the first press.
+    val activity = LocalActivity.current
+    val exitMessage = stringResource(R.string.snackbar_exit)
+    var exitDeadline by remember { mutableLongStateOf(0L) }
+
     BackHandler {
-        if (showSettings) showSettings = false else showBar()
+        when {
+            showSettings -> showSettings = false
+
+            // Only while the page is really on screen: a service that failed to resolve
+            // shows the error screen, and stepping through the history of the WebView
+            // hidden behind it would look like back does nothing at all.
+            state is ServiceState.Ready && controller.goBack() -> Unit
+
+            else -> {
+                // elapsedRealtime, not currentTimeMillis: it cannot jump when the clock is
+                // adjusted, which would either close the app instantly or never.
+                val now = SystemClock.elapsedRealtime()
+                if (now <= exitDeadline) {
+                    activity?.finish()
+                } else {
+                    // Nothing has to be cancelled when the second press does not come: the
+                    // deadline simply passes and the next press arms the app again.
+                    exitDeadline = now + EXIT_CONFIRM_WINDOW_MS
+                    scope.launch {
+                        // The queue is emptied first, otherwise a message left over from an
+                        // earlier press would have to time out before this one is shown.
+                        snackbarHostState.currentSnackbarData?.dismiss()
+                        snackbarHostState.showSnackbar(
+                            message = exitMessage,
+                            duration = SnackbarDuration.Short,
+                        )
+                    }
+                }
+            }
+        }
     }
 
     // The service screens are always dark behind the system bars; the settings screen
     // follows the app theme.
     SystemBarIcons(lightIcons = !showSettings || darkTheme)
+
+    val layoutDirection = LocalLayoutDirection.current
+
+    // What the navigation occupies while it is on screen: its own height plus the system
+    // navigation inset it pads itself with.
+    val barHeight = ServiceBottomBarHeight +
+        NavigationBarDefaults.windowInsets.asPaddingValues().calculateBottomPadding()
+
+    // The page gives up that space exactly while the bar is shown, so the bar never covers
+    // the end of the page, and the full height is back as soon as it hides again.
+    val barPadding = if (barVisible) barHeight else 0.dp
 
     Surface(color = MaterialTheme.colorScheme.surface) {
         Box(Modifier.fillMaxSize()) {
@@ -241,7 +301,15 @@ private fun AppContent(
                     onRetry = retry,
                     permissionMissing = permissionMissing,
                     onGrantPermission = { openAppSettings(context) },
-                    modifier = Modifier.padding(inner),
+                    // The bottom inset follows barVisible rather than the Scaffold's own
+                    // value: the Scaffold measures the bar as it slides, which would resize
+                    // the page on every frame of the animation instead of once.
+                    modifier = Modifier.padding(
+                        start = inner.calculateStartPadding(layoutDirection),
+                        top = inner.calculateTopPadding(),
+                        end = inner.calculateEndPadding(layoutDirection),
+                        bottom = barPadding,
+                    ),
                 )
             }
 
@@ -299,8 +367,11 @@ private fun AppContent(
     }
 }
 
-/** How long the navigation stays on screen after it was requested. */
-private const val BAR_VISIBLE_MS = 3_000L
+/** How long the navigation stays on screen after the last user input. */
+private const val BAR_IDLE_MS = 3_000L
+
+/** How long the first back press stays armed before the app asks again. */
+private const val EXIT_CONFIRM_WINDOW_MS = 2_000L
 
 private fun toast(context: Context, @StringRes message: Int) {
     Toast.makeText(context, message, Toast.LENGTH_SHORT).show()

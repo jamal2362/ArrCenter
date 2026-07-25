@@ -54,7 +54,9 @@ private val BarEntries: List<BarEntry> = listOf(
     BarEntry.Settings,
 )
 
-private val BarHeight = 56.dp
+/** Height of the bar itself, without the system navigation inset below it. */
+val ServiceBottomBarHeight = 56.dp
+
 private val IndicatorWidth = 48.dp
 private val IndicatorHeight = 32.dp
 
@@ -103,7 +105,7 @@ fun ServiceBottomBar(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(BarHeight)
+                    .height(ServiceBottomBarHeight)
                     .selectableGroup(),
             ) {
                 BarEntries.forEach { entry ->
@@ -154,7 +156,7 @@ private fun RowScope.BarItem(
     Box(
         modifier = Modifier
             .weight(1f)
-            .height(BarHeight)
+            .height(ServiceBottomBarHeight)
             .selectable(
                 selected = selected,
                 role = role,
