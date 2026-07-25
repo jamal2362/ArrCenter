@@ -19,8 +19,6 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -41,7 +39,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
@@ -253,8 +250,6 @@ private fun AppContent(
     // follows the app theme.
     SystemBarIcons(lightIcons = !showSettings || darkTheme)
 
-    val layoutDirection = LocalLayoutDirection.current
-
     Surface(color = MaterialTheme.colorScheme.surface) {
         Box(Modifier.fillMaxSize()) {
 
@@ -288,15 +283,7 @@ private fun AppContent(
                     onRetry = retry,
                     permissionMissing = permissionMissing,
                     onGrantPermission = { openAppSettings(context) },
-                    // Everything but the bottom inset of the Scaffold: the navigation floats
-                    // over the page instead of shortening it. It now comes and goes with
-                    // every touch, and a WebView that changed height that often would reflow
-                    // the page right under the user's finger.
-                    modifier = Modifier.padding(
-                        start = inner.calculateStartPadding(layoutDirection),
-                        top = inner.calculateTopPadding(),
-                        end = inner.calculateEndPadding(layoutDirection),
-                    ),
+                    modifier = Modifier.padding(inner),
                 )
             }
 
