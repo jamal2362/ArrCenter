@@ -19,6 +19,21 @@
         <intent>
             <action android:name="android.intent.action.VIEW" />
         </intent>
+
+        <!--
+            Custom Tabs: without these two the app cannot see any browser, so
+            CustomTabsClient.getPackageName() returns null and every external link would
+            leave the app instead of opening the in-app browser.
+        -->
+        <intent>
+            <action android:name="android.support.customtabs.action.CustomTabsService" />
+        </intent>
+
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" />
+        </intent>
     </queries>
 
     <application

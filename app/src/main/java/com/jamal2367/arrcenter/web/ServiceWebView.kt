@@ -17,6 +17,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.compose.ui.graphics.toArgb
+import androidx.core.net.toUri
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
 import com.jamal2367.arrcenter.R
@@ -29,6 +30,9 @@ import com.jamal2367.arrcenter.model.ServiceType
  * the main frame, `window.open` support (needed for the Plex sign-in popup used by Seerr),
  * downloads through the system DownloadManager, handling of non-http links and
  * flicker-free style injection.
+ *
+ * The WebView only ever shows the service itself. Every link that leads somewhere else is
+ * opened in an in-app browser (Custom Tab) instead - see [belongsToCurrentService].
  *
  * Everything that outlives a single composition is routed through [host] rather than
  * captured in a lambda, so the WebView can be reused across service switches without ever
@@ -90,20 +94,26 @@ fun createServiceWebView(
             request: WebResourceRequest,
         ): Boolean {
             val uri = request.url
-            return when (uri.scheme?.lowercase()) {
-                null, "http", "https" ->
-                    if (uri.isYouTube()) {
-                        handOff(appContext, uri)
-                        true
-                    } else {
-                        false
-                    }
-                // mailto:, magnet:, tel:, intent:, … cannot be rendered by a WebView.
-                else -> {
-                    handOff(appContext, uri)
-                    true
-                }
+            // The activity context keeps a Custom Tab inside this app's task, so its close
+            // button returns here. Only used while the WebView is on screen, which is the
+            // only moment a link can be tapped.
+            val linkContext = view?.context ?: appContext
+
+            // mailto:, magnet:, tel:, intent:, … cannot be rendered by a WebView.
+            if (uri.scheme != null && !uri.isWebLink()) {
+                handOff(linkContext, uri, host)
+                return true
             }
+
+            // Never hijack iframes and never break out of a redirect chain: a service behind
+            // a reverse proxy or single sign-on bounces the main frame through other hosts,
+            // and those steps have to stay in the WebView to keep the session.
+            if (!request.isForMainFrame || request.isRedirect) return false
+
+            if (belongsToCurrentService(view, controller, uri)) return false
+
+            handOff(linkContext, uri, host)
+            return true
         }
 
         override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
@@ -183,6 +193,10 @@ fun createServiceWebView(
 
             // A throwaway WebView that only reports where the popup wanted to go. The URL is
             // then opened in the real WebView so the session and OAuth redirect are kept.
+            //
+            // Popups stay in the WebView on purpose: the only ones the services open are
+            // sign-in windows (Plex for Seerr), and those have to share the cookie jar of
+            // the page that opened them. A Custom Tab cannot, so it would break the login.
             val proxy = WebView(target.context)
             proxy.webViewClient = object : WebViewClient() {
                 override fun shouldOverrideUrlLoading(
@@ -208,11 +222,36 @@ fun createServiceWebView(
     }
 }.also { controller.attach(it) }
 
-private fun handOff(context: Context, uri: Uri) {
-    if (!openExternally(context, uri)) {
+private fun handOff(context: Context, uri: Uri, host: WebViewHost) {
+    if (!openExternalLink(context, uri, host.customTabAppearance)) {
         Toast.makeText(context, R.string.no_app_for_link, Toast.LENGTH_SHORT).show()
     }
 }
+
+/**
+ * Whether [uri] is part of what this WebView is meant to show.
+ *
+ * The host is compared against the page currently on screen *and* against the resolved
+ * service address. The first covers a login flow that sent the WebView to an identity
+ * provider - once there, its own links are not external either. The second brings the user
+ * back to the service after such a detour, even though the service is no longer the page in
+ * the WebView.
+ *
+ * Ports are deliberately ignored: a service that redirects to another port of the same host
+ * is still the same service.
+ */
+private fun belongsToCurrentService(
+    view: WebView?,
+    controller: ServiceWebController,
+    uri: Uri,
+): Boolean {
+    // A URL without a host is nothing a browser could open either - leave it to the WebView.
+    val target = uri.host?.lowercase() ?: return true
+    return target == hostOf(view?.url) || target == hostOf(controller.loadedUrl)
+}
+
+private fun hostOf(url: String?): String? =
+    url?.takeIf { it.isNotBlank() }?.toUri()?.host?.lowercase()
 
 /**
  * `accept` attributes may contain file extensions (`.nzb`) which the document picker cannot

@@ -89,6 +89,13 @@ class WebViewHost {
     var pendingFileCallback: ValueCallback<Array<Uri>>? = null
 
     /**
+     * Colours for the in-app browser that opens external links, kept in sync with the theme
+     * by the root composable. Held here for the same reason as the callbacks above: it is
+     * read from a WebView that outlives the composition which produced the value.
+     */
+    var customTabAppearance: CustomTabAppearance? = null
+
+    /**
      * Opens the system file picker. Installed once by the root composable so a WebView that
      * survives several screens never calls into an unregistered launcher.
      */

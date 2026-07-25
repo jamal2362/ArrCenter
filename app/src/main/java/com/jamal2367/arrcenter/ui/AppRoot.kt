@@ -27,6 +27,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -35,6 +36,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
@@ -52,6 +54,7 @@ import com.jamal2367.arrcenter.ui.screens.SettingsScreen
 import com.jamal2367.arrcenter.ui.theme.AppTheme
 import com.jamal2367.arrcenter.ui.theme.SystemBarIcons
 import com.jamal2367.arrcenter.ui.theme.isDark
+import com.jamal2367.arrcenter.web.CustomTabAppearance
 import com.jamal2367.arrcenter.web.WebViewHost
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -115,6 +118,19 @@ private fun AppContent(
             }
         }
         onDispose { host.requestFileChooser = null }
+    }
+
+    // Links leaving a service open in a Custom Tab, which is a separate activity of the
+    // browser and therefore cannot read the Compose theme. Handing the colours over here
+    // keeps the in-app browser in the app's look, including the current dark mode.
+    val colorScheme = MaterialTheme.colorScheme
+    SideEffect {
+        host.customTabAppearance = CustomTabAppearance(
+            darkTheme = darkTheme,
+            toolbarColor = colorScheme.surfaceContainer.toArgb(),
+            iconColor = colorScheme.onSurface.toArgb(),
+            navigationBarColor = colorScheme.surface.toArgb(),
+        )
     }
 
     val controller = host.controllerFor(currentService)

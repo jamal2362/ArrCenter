@@ -18,27 +18,38 @@ fun Uri.isYouTube(): Boolean {
 }
 
 /**
- * Hands a link to another app.
+ * Opens a link outside of the app's own WebView.
  *
- * YouTube links prefer the YouTube app; everything else goes to whatever can handle the
- * scheme. Links the WebView cannot render itself (`mailto:`, `magnet:`, `tel:`, …) used to
- * end up on an `ERR_UNKNOWN_URL_SCHEME` error page.
+ * Three steps, in this order:
+ *  1. YouTube links prefer the YouTube app, which handles them far better than any browser.
+ *  2. Web links go into an in-app browser (Custom Tab). The page is *not* rendered in a
+ *     WebView of this app, and the user returns with the button in the top left of the tab.
+ *  3. Everything else - `mailto:`, `magnet:`, `tel:`, `intent:`, … as well as web links on a
+ *     device whose browser does not implement Custom Tabs - is handed to the app registered
+ *     for the scheme, which for a web link is the system's default browser.
  *
  * @return `false` when no app on the device can open [uri].
  */
-fun openExternally(context: Context, uri: Uri): Boolean {
-    val intent = Intent(Intent.ACTION_VIEW, uri).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-    if (uri.isYouTube()) intent.setPackage(YOUTUBE_PACKAGE)
+fun openExternalLink(
+    context: Context,
+    uri: Uri,
+    appearance: CustomTabAppearance? = null,
+): Boolean {
+    if (uri.isYouTube() && startViewIntent(context, uri, YOUTUBE_PACKAGE)) return true
+    if (openInCustomTab(context, uri, appearance)) return true
+    return startViewIntent(context, uri, packageName = null)
+}
 
-    try {
-        context.startActivity(intent)
-        return true
-    } catch (_: ActivityNotFoundException) {
-        // The preferred app is not installed - retry without the package restriction.
-    }
+/**
+ * Fires a plain `ACTION_VIEW`, optionally restricted to one app.
+ *
+ * @return `false` when [packageName] is not installed, or nothing at all handles the scheme.
+ */
+private fun startViewIntent(context: Context, uri: Uri, packageName: String?): Boolean {
+    val intent = Intent(Intent.ACTION_VIEW, uri)
+        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        .setPackage(packageName)
 
-    if (intent.`package` == null) return false
-    intent.setPackage(null)
     return try {
         context.startActivity(intent)
         true
