@@ -19,9 +19,13 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -39,7 +43,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -50,6 +56,7 @@ import com.jamal2367.arrcenter.model.ServiceType
 import com.jamal2367.arrcenter.net.ACCESS_LOCAL_NETWORK
 import com.jamal2367.arrcenter.net.needsLocalNetworkPermission
 import com.jamal2367.arrcenter.ui.components.ServiceBottomBar
+import com.jamal2367.arrcenter.ui.components.ServiceBottomBarHeight
 import com.jamal2367.arrcenter.ui.screens.ServiceScreen
 import com.jamal2367.arrcenter.ui.screens.SettingsScreen
 import com.jamal2367.arrcenter.ui.theme.AppTheme
@@ -250,6 +257,17 @@ private fun AppContent(
     // follows the app theme.
     SystemBarIcons(lightIcons = !showSettings || darkTheme)
 
+    val layoutDirection = LocalLayoutDirection.current
+
+    // What the navigation occupies while it is on screen: its own height plus the system
+    // navigation inset it pads itself with.
+    val barHeight = ServiceBottomBarHeight +
+        NavigationBarDefaults.windowInsets.asPaddingValues().calculateBottomPadding()
+
+    // The page gives up that space exactly while the bar is shown, so the bar never covers
+    // the end of the page, and the full height is back as soon as it hides again.
+    val barPadding = if (barVisible) barHeight else 0.dp
+
     Surface(color = MaterialTheme.colorScheme.surface) {
         Box(Modifier.fillMaxSize()) {
 
@@ -283,7 +301,15 @@ private fun AppContent(
                     onRetry = retry,
                     permissionMissing = permissionMissing,
                     onGrantPermission = { openAppSettings(context) },
-                    modifier = Modifier.padding(inner),
+                    // The bottom inset follows barVisible rather than the Scaffold's own
+                    // value: the Scaffold measures the bar as it slides, which would resize
+                    // the page on every frame of the animation instead of once.
+                    modifier = Modifier.padding(
+                        start = inner.calculateStartPadding(layoutDirection),
+                        top = inner.calculateTopPadding(),
+                        end = inner.calculateEndPadding(layoutDirection),
+                        bottom = barPadding,
+                    ),
                 )
             }
 
