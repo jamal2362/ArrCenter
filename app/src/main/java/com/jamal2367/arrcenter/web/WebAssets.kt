@@ -86,7 +86,6 @@ private fun cssFor(type: ServiceType): String? = when (type) {
 
     ServiceType.Uvs -> """
         body { background-image: unset !important; }
-        button#themeToggle.controls-toggle.theme-toggle { display: none; }
     """.trimIndent()
 }
 
