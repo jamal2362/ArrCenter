@@ -84,9 +84,7 @@ private fun cssFor(type: ServiceType): String? = when (type) {
         .navbar-nav .open .dropdown-menu { float: right; }
     """.trimIndent()
 
-    ServiceType.Uvs -> """
-        body { background-image: unset !important; }
-    """.trimIndent()
+    ServiceType.Uvs -> null
 }
 
 private fun extraScriptFor(type: ServiceType): String? = when (type) {
